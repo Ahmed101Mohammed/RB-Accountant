@@ -1,0 +1,12 @@
+# App features from user prespective
+- Create new account.
+- Get data of an account by code or name.
+- Edit account data
+- Delete an account with delete button (verify button).
+- Create new transaction.
+- Get all transactions.
+- Get transactions for specific account in date range.
+- Edit transaction.
+- Delete transaction.
+- Ability to print the results of "Get transactions for specific account in date range." feature.
+- 
