@@ -1,0 +1,31 @@
+{
+  "appId": "com.RightBrothers.RB_Accountant",
+  "productName": "RB Accountant",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "**/*",
+    "!out",
+    "!release/**/*",
+    "!*.log",
+    "!*.md",
+    "!LICENSE",
+    "package.json"
+  ],
+  "extraResources": [
+    "assets/**"
+  ],
+  "win": {
+    "target": "nsis",
+    "icon": "images/RB.ico",
+    "artifactName": "RB-Accountant-${version}-setup.exe"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": true,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
+  }
+}
