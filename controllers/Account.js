@@ -4,7 +4,7 @@ import AccountEntity from "../entities/Account.js";
 import AccountModel from "../models/Account.js";
 class Account
 {
-  static async create(id, name)
+  static create(id, name)
   {
     const userData = {
       id: id.trim(),
@@ -47,7 +47,7 @@ class Account
     const newAccount = new AccountEntity(userData.id, userData.name)
     try
     {
-      const response = await AccountModel.create(newAccount)
+      const response = AccountModel.create(newAccount)
       return new Response(true, null, response)
     }
     catch(error)
@@ -56,11 +56,11 @@ class Account
     }
   }
   
-  static async getAllAccounts()
+  static getAllAccounts()
   {
     try
     {
-      const accounts = await AccountModel.getAllAccounts()
+      const accounts = AccountModel.getAllAccounts()
       return new Response(true, null, accounts)
     }
     catch(error)
@@ -69,7 +69,7 @@ class Account
     }
   }
 
-  static async getAccountByName(name)
+  static getAccountByName(name)
   {
     const userData = {
       name: name.trim()
@@ -93,7 +93,7 @@ class Account
 
     try
     {
-      const account = await AccountModel.getAccountByName(userData.name)
+      const account = AccountModel.getAccountByName(userData.name)
       if(!account) return new Response(false, `لا يوجد حساب بهذا الإسم ${userData.name}`)
       return new Response(true, null, account)
     }
@@ -103,7 +103,7 @@ class Account
     }
   }
 
-  static async getAccountById(id)
+  static getAccountById(id)
   {
     const userData = {
       id: id.trim(),
@@ -127,7 +127,7 @@ class Account
 
     try
     {
-      const account = await AccountModel.getAccountById(id)
+      const account = AccountModel.getAccountById(id)
       if(!account) return new Response(false, `لا يوجد حساب بهاذا الكود ${id}`)
       return new Response(true, null, account)
     }
@@ -137,7 +137,7 @@ class Account
     }
   }
 
-  static async getAccountsItsNameContain(partialName)
+  static getAccountsItsNameContain(partialName)
   {
     const userData = {
       name: partialName
@@ -160,7 +160,7 @@ class Account
 
     try
     {
-      const accounts = await AccountModel.getAccountsItsNameContain(partialName)
+      const accounts = AccountModel.getAccountsItsNameContain(partialName)
       return new Response(true, null, accounts)
     }
     catch(error)
@@ -169,7 +169,7 @@ class Account
     }
   }
 
-  static async getAccountsItsIdContain(partialId)
+  static getAccountsItsIdContain(partialId)
   {
     const userData = {
       id: partialId
@@ -194,7 +194,7 @@ class Account
 
     try
     {
-      const accounts = await AccountModel.getAccountsItsIdContain(partialId)
+      const accounts = AccountModel.getAccountsItsIdContain(partialId)
       return new Response(true, null, accounts)
     }
     catch(error)
@@ -203,7 +203,7 @@ class Account
     }
   }
 
-  static async delete(id)
+  static delete(id)
   {
     const userData = {
       id: id.trim()
@@ -230,7 +230,7 @@ class Account
     }
     try
     {
-      const response = await AccountModel.delete(id)
+      const response = AccountModel.delete(id)
       return new Response(true, null, response)
     }
     catch(error)
@@ -239,7 +239,7 @@ class Account
     }
   }
 
-  static async update(id, name)
+  static update(id, name)
   {
     const userData = {
       id: id.trim(),
@@ -282,7 +282,7 @@ class Account
     const updatedAccount = new AccountEntity(userData.id, userData.name)
     try
     {
-      const response = await AccountModel.update(updatedAccount)
+      const response = AccountModel.update(updatedAccount)
       return new Response(true, null, response)
     }
     catch(error)

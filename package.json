@@ -1,6 +1,6 @@
 {
   "name": "rb-accountant",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "The accountant app for my dad for his work.",
   "keywords": [
     "Desktop_App",
@@ -21,6 +21,7 @@
   "type": "module",
   "main": "main.js",
   "scripts": {
+    "dev": "electron .",
     "start": "electron-forge start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
@@ -47,6 +48,9 @@
   "dependencies": {
     "better-sqlite3": "^11.8.1",
     "electron-squirrel-startup": "^1.0.1",
-    "joi": "^17.13.3"
+    "exceljs": "^4.4.0",
+    "joi": "^17.13.3",
+    "pdfkit": "^0.16.0",
+    "pdfkit-table": "^0.1.99"
   }
 }

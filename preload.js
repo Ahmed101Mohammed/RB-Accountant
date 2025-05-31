@@ -19,9 +19,8 @@ contextBridge.exposeInMainWorld('apis', {
   getAccountBalanceAtStartPeriod: (id, startPeriod) => ipcRenderer.invoke('getAccountBalanceAtStartPeriod', id, startPeriod),
   getAcccountStatementForSpecificPeriod: (id, startPeriod, endPeriod) => ipcRenderer.invoke('getAcccountStatementForSpecificPeriod', id, startPeriod, endPeriod),
   getTransactionById: (id)=> ipcRenderer.invoke('getTransactionById', id),
+  getFirstTransactionDateOfAccount: (id) => ipcRenderer.invoke('getFirstTransactionDateOfAccount', id),
+  getLastTransactionDateOfAccount: (id) => ipcRenderer.invoke('getLastTransactionDateOfAccount', id),
+  exportPDF: (data)=> ipcRenderer.invoke('exportPDF', data),
+  exportExcel: (data)=> ipcRenderer.invoke('exportExcel', data),
 });
-
-// contextBridge.exposeInMainWorld('apis', {
-//   create: async(account)=> await Account.create(account),
-//   getAllAccounts: async()=> await Account.getAllAccounts()
-// })
