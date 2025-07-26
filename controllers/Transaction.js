@@ -1,16 +1,17 @@
 import Joi from "joi";
 import Response from "../utils/Response.js";
 import TransactionModel from "../models/Transaction.js";
-import TransactionDBEntity from "../entities/TransactionBody.js";
+// import TransactionDBEntity from "../entities/TransactionBody.js";
 import Account from "./Account.js";
 import AccountModel from "../models/Account.js";
 import { currentDate } from "../utils/currentDate.js";
-import TransactionMetaData from "../entities/transaction/TransactionMetaData.js";
-import ParticipantsList from "../entities/transaction/ParticipantsList.js";
-import LightParticipant from "../entities/transaction/LightParticipant.js";
-import ParticipantBody from "../entities/transaction/ParticipantBody.js";
-import TransactionBody from "../entities/transaction/TransactionBody.js";
-
+import {TransactionMetaData} from "../entities/transaction/TransactionMetaData.js";
+import {ParticipantsList} from "../entities/transaction/ParticipantsList.js";
+import {LightParticipant} from "../entities/transaction/LightParticipant.js";
+import {ParticipantBody} from "../entities/transaction/ParticipantBody.js";
+import {TransactionBody} from "../entities/transaction/TransactionBody.js";
+import {Transaction as TransactionEntity} from "../entities/transaction/Transaction.js"
+import AccountEntity from "../entities/Account.js";
 class Transaction
 {
   static transactionBalance(participants)
@@ -30,7 +31,7 @@ class Transaction
   static compressedParticipants(participants)
   {
     // [ {amount, role, code} ]
-    if(!Transaction.isParticipantWith2roles(participants)) throw new Error("Can't compressed participants where there participant with 2 roles");
+    if(Transaction.isParticipantWith2roles(participants)) throw new Error("Can't compressed participants where there participant with 2 roles");
     let role0 = {};
     let role1 = {};
     for(let participant of participants)
@@ -70,32 +71,20 @@ class Transaction
     {
       if(participant.role === 0) role0[participant.id] = 1;
       if(participant.role === 1) role1[participant.id] = 1;
-      if(role0[participant.id] && role1[participant.id]) return true;
+      if(role0[participant.id] === 1 && role1[participant.id] === 1) return true;
     }
     return false;
   }
 
-  static create(date, comment, participants)
+  static create(transactionData)
   {
-    const transactionData = {
-      comment: comment.trim(),
-      date: date.trim(),
-      participants
-    }
+    transactionData.comment.trim();
+    transactionData.date.trim();
 
     const schema = Joi.object({
-      comment: TransactionMetaData.commentSchema
-        .messages({
-          'string.base': 'يجب أن يكون البيان نصا',
-          'string.max': 'يجب اللا يتجاوز البيان 150 حرفا'
-        }),
+      comment: TransactionMetaData.commentSchema,
       date: TransactionMetaData.dateSchema
-      .required()
-      .messages({
-        'string.pattern.name': 'يجب أن يكون التاريخ بصيغة yyyy-mm-dd',
-        'string.empty': 'حقل التاريخ مطلوب',
-        'any.required': 'هذا الحقل مطلوب'
-      }),
+      .required(),
       participants: Joi
       .array()
       .min(2)
@@ -104,13 +93,7 @@ class Transaction
           amount: ParticipantBody.amountSchema
             .required(),
           id: LightParticipant.idSchema
-            .required()
-            .messages({
-              'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
-              'string.max': 'أقصى طول لكود الحساب 20 رقما',
-              'any.required': 'يجب أن يكون للحساب كود',
-              'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط'
-            }),
+            .required(),
           role: ParticipantBody.roleSchema
             .required()
         })
@@ -122,8 +105,9 @@ class Transaction
     {
       return new Response(false, validationResponse.error.message)
     }
+    let {date, comment, participants} = validationResponse.value;
 
-    if(currentDate < date)
+    if(currentDate() < date)
     {
       return new Response(false, 'لا يمكن إنشاء معاملة بتاريخ في المستقبل')
     }
@@ -156,7 +140,7 @@ class Transaction
       const idsString = notExistsAccounts.map(id => `$id`).join(', ')
       return new Response(false, `لا يوجد حسابات بهذه الأكواد: ${idsString}`)
     }
-
+    
     const transactionMetaData = new TransactionMetaData(date, comment)
     const participantList = new ParticipantsList()
     for(let participant of participants)
@@ -188,7 +172,6 @@ class Transaction
     }
     catch(error)
     {
-      console.log({error})
       return new Response(false, error.message)
     }
   }
@@ -364,42 +347,14 @@ class Transaction
   static getAcccountStatementForSpecificPeriod(accountId, startPeriod, endPeriod)
   {
     const transactionData = {
-      accountId: accountId.trim(),
-      startPeriod: startPeriod.trim(),
-      endPeriod: endPeriod.trim()
+      accountId: accountId.toString().trim(),
+      startPeriod: startPeriod.toString().trim(),
+      endPeriod: endPeriod.toString().trim()
     }
     const schema = Joi.object({
-      accountId: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .required()
-        .max(20)
-        .messages({
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط',
-        }),
-        startPeriod: Joi
-        .string()
-        .pattern(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ yyyy-mm-dd')
-        .min(10)
-        .max(10)
-        .required()
-        .messages({
-          'string.pattern.name': 'يجب أن يكون التاريخ بصيغة yyyy-mm-dd',
-          'string.empty': 'حقل التاريخ مطلوب',
-          'any.required': 'هذا الحقل مطلوب'
-        }),
-      endPeriod: Joi
-        .string()
-        .pattern(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ yyyy-mm-dd')
-        .min(10)
-        .max(10)
-        .required()
-        .messages({
-          'string.pattern.name': 'يجب أن يكون التاريخ بصيغة yyyy-mm-dd',
-          'string.empty': 'حقل التاريخ مطلوب',
-          'any.required': 'هذا الحقل مطلوب'
-        })
+      accountId: AccountEntity.idSchema.required(),
+      startPeriod: TransactionMetaData.dateSchema.required(),
+      endPeriod: TransactionMetaData.dateSchema.required()
     })
 
     const validationResponse = schema.validate(transactionData)
@@ -412,7 +367,7 @@ class Transaction
 
     if(!response.getState())
     {
-      return new Response(false, `لا يوجد حساب بهذا الكود ${debtorId}`)
+      return new Response(false, `لا يوجد حساب بهذا الكود ${accountId}`)
     }
 
     try
@@ -595,7 +550,6 @@ class Transaction
     try
     {
       const date = TransactionModel.getLastTransactionDateOfAccount(accountId)
-      console.log(date)
       if(!date) return new Response(false, null, 'Accoun has no transactions')
       return new Response(true, null, date)
     }
@@ -605,23 +559,32 @@ class Transaction
     }
   }
 
+  static getAccountTransactionsCount(accountId)
+  {
+    const accountIdSchema = AccountEntity.idSchema.required();
+    const validationResponse = accountIdSchema.validate(accountId);
+    if(validationResponse.error)
+    {
+      return new Response(false, validationResponse.error.message)
+    }
+
+    try
+    {
+      const response = TransactionModel.getAccountTransactionsCount(accountId);
+      return new Response(true, null, response)
+    }
+    catch(error)
+    {
+      return new Response(false, error.message);
+    }
+  }
+
   static delete(id)
   {
-    const transactionData = {id: id.toString()}
-    const schema = Joi.object({
-      id: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود العملية يحتوي على أرقام فقط')
-        .min(1)
-        .required()
-        .messages({
-          'string.min': 'يجب أن يتكون كود المعاملة على رقم واحد على الأقل',
-          'any.required': 'يجب أن يكون للعملية كود',
-          'string.pattern.base': 'كود العملية يحتوي على أرقام فقط'
-        })
-    })
+    const transactionId = id.toString().trim();
+    const schema = TransactionEntity.idSchema.required();
 
-    const validationResponse = schema.validate(transactionData)
+    const validationResponse = schema.validate(transactionId)
     if(validationResponse.error)
     {
       return new Response(false, validationResponse.error.message)
@@ -637,108 +600,87 @@ class Transaction
     }
   }
 
-  static update(transactionId, amount, debtorId, creditorId, comment, date)
+  static update(id, transactionData)
   {
-    const transactionData = {
-      transactionId: transactionId.toString(),
-      amount,
-      debtorId: debtorId.trim(),
-      creditorId: creditorId.trim(),
-      comment: comment.trim(),
-      date: date.trim(),
-    }
+    const idSchema = TransactionEntity.idSchema.required();
+
+    transactionData.comment.trim();
+    transactionData.date.trim();
+
     const schema = Joi.object({
-      transactionId: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود العملية يحتوي على أرقام فقط')
-        .required()
-        .min(1)
-        .messages({
-          'string.min': 'لا يوجد كود عملية بالسالب',
-          'string.pattern.base': 'كود العملية يحتوي على أرقام فقط'
-        }),
-      amount: Joi
-        .number()
-        .precision(2)
-        .required()
-        .min(0.01)
-        .messages({
-          'number.base': 'مبلغ لبمعاملة يجب أن يكون رقما',
-          'number.precision': 'لا يسمح بأجزاء من ألف لمبلغ المعاملة',
-          'number.min': 'أقل مبلغ للمعاملة قرش واحد'
-        }),
-      debtorId: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .min(1)
-        .required()
-        .max(20)
-        .messages({
-          'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط'
-        }),
-      creditorId: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .min(1)
-        .max(20)
-        .required()
-        .messages({
-          'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط'
-        }), 
-      comment: Joi
-        .string()
-        .max(150)
-        .allow("")
-        .messages({
-          'string.base': 'يجب أن يكون الإسم نصا',
-          'string.max': 'إسم الحساب يجب أن لا يتجاوز 150 حرفا'
-        }),
-      date: Joi
-      .string()
-      .required()
-      .pattern(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ yyyy-mm-dd')
-      .min(10)
-      .max(10)
-      .messages({
-        'string.pattern.name': 'يجب أن يكون التاريخ بصيغة yyyy-mm-dd',
-        'string.empty': 'حقل التاريخ مطلوب',
-        'any.required': 'هذا الحقل مطلوب'
-      })
+      comment: TransactionMetaData.commentSchema,
+      date: TransactionMetaData.dateSchema
+      .required(),
+      participants: Joi
+      .array()
+      .min(2)
+      .items(Joi
+        .object({
+          amount: ParticipantBody.amountSchema
+            .required(),
+          id: LightParticipant.idSchema
+            .required(),
+          role: ParticipantBody.roleSchema
+            .required()
+        })
+      )
     })
 
+    const validationIdResposne = idSchema.validate(id);
+    if(validationIdResposne.error) return new Response(false, validationIdResposne.error.message);
+
     const validationResponse = schema.validate(transactionData)
-    if(validationResponse.error)
+    if(validationResponse.error) return new Response(false, validationResponse.error.message);
+  
+    let {date, comment, participants} = validationResponse.value;
+    if(currentDate() < date)
     {
-      return new Response(false, validationResponse.error.message)
+      return new Response(false, 'لا يمكن إنشاء معاملة بتاريخ في المستقبل')
     }
 
-    if(debtorId === creditorId)
+    if(date < '0001-01-01')
     {
-      return new Response(false, "لا يسمح بأن يكون الدائن والمدان نفس الحساب")
+      return new Response(false, 'لا يمكن إنشاء معاملة بتاريخ قبل الميلاد')
     }
 
-    const debtorAccountResponse = Account.getAccountById(debtorId)
-
-    if(!debtorAccountResponse.getState())
+    if(Transaction.isParticipantWith2roles(participants))
     {
-      return new Response(false, `لا يوجد حساب لمدين بهذا الكود ${debtorId}`)
+      return new Response(false, 'لا يمكن لحساب أن يكون دائنا ومدينا في نفس المعاملة')
     }
 
-    const creditorAccountResponse = Account.getAccountById(creditorId)
-    if(!creditorAccountResponse.getState())
+    const balance = Transaction.transactionBalance(participants)
+    if(balance !== 0)
     {
-      return new Response(false, `لا يوجد حساب لدائن بهذا الكود ${creditorId}`)
+      let response = balance > 0 
+        ? new Response(false, `${balance} ` + 'هنالك زيادة في مبلغ المدينين عن الدائنين بقدر')
+        : new Response(false, `${balance*-1} ` + 'هنالك زيادة في مبلغ الدائنين عن المدينين بقدر')
+      return response;
+    }
+    
+    // build a function to check that all debtors and creditors accounts are exists.
+    const ids = participants.map(participant => participant.id);
+    const notExistsAccounts = AccountModel.getMissingIds(ids)
+
+    if(notExistsAccounts.length !== 0)
+    {
+      const idsString = notExistsAccounts.map(id => `${id}`).join(', ')
+      return new Response(false, `لا يوجد حسابات بهذه الأكواد: ${idsString}`)
+    }
+    
+    const transactionMetaData = new TransactionMetaData(date, comment)
+    const participantList = new ParticipantsList()
+    for(let participant of participants)
+    {
+      let participantBody = new ParticipantBody(participant.role, participant.amount)
+      let lightParticipant = new LightParticipant(participant.id, participantBody)
+      participantList.push(lightParticipant)
     }
 
-    const transictionDBEntity = new TransactionDBEntity(amount, debtorId, creditorId, comment, date) 
+    const transactionBody = new TransactionBody(transactionMetaData, participantList)
     try
     {
-      const response = TransactionModel.update(transactionId, transictionDBEntity)
-      return new Response(true, null, response)
+      const response = TransactionModel.update(id, transactionBody)
+      return new Response(true, null,  response)
     }
     catch(error)
     {

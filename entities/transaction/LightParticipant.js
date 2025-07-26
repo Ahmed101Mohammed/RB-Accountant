@@ -1,8 +1,8 @@
 import Joi from "joi";
-import isValid from "../utils/isValid.js";
-import ParticipantBody from "./ParticipantBody.js";
+import { isValid } from "../utils/isValid.js";
+import {ParticipantBody} from "./ParticipantBody.js";
 
-class LightParticipant
+export class LightParticipant
 {
   #body;
   #id;
@@ -10,7 +10,13 @@ class LightParticipant
               .string()
               .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
               .min(1)
-              .max(20);
+              .max(20)
+              .messages({
+              'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
+              'string.max': 'أقصى طول لكود الحساب 20 رقما',
+              'any.required': 'يجب أن يكون للحساب كود',
+              'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط'
+            });
   constructor(id, participantBody)
   {
     this.setId(id);
@@ -19,7 +25,7 @@ class LightParticipant
 
   setId(id)
   {
-    id = id.trim()
+    id = id.toString().trim()
     const schema = LightParticipant.idSchema.required();
     const isValidId = isValid(schema, id)
     if(!isValidId[0]) throw new Error(isValidId[1].message)
@@ -32,21 +38,26 @@ class LightParticipant
     this.#body = participantBody;
   }
 
-  getId()
+  get id()
   {
     return this.#id;
   }
 
-  getBody()
+  get body()
   {
     return this.#body
   }
 
-  isLightParticipant(object)
+  toJson()
+  {
+    return {
+      id: this.id,
+      body: this.body.toJson(),
+    }
+  }
+  static isLightParticipant(object)
   {
     return object instanceof LightParticipant;
   }
 
 }
-
-export default LightParticipant

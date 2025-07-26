@@ -1,8 +1,6 @@
-isValid(JoiSchema, val)
+export const isValid = (JoiSchema, val) =>
 {
-  const {error, value} = schema.validate(val)
+  const {error, value} = JoiSchema.validate(val)
   if(error) return [false, error]
   return [true, value]
 }
-
-export default isValid;

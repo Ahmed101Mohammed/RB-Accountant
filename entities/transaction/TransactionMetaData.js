@@ -1,11 +1,26 @@
 import Joi from 'joi';
+import { isValid } from '../utils/isValid.js';
 
-class TransactionMetaData 
+export class TransactionMetaData 
 {
   #date;
   #comment = "";
-  static dateSchema = Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ yyyy-mm-dd');
-  static commentSchema = Joi.string().max(150).allow('')
+  static dateSchema = Joi
+    .string()
+    .pattern(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ yyyy-mm-dd')
+    .messages({
+        'string.pattern.name': 'يجب أن يكون التاريخ بصيغة yyyy-mm-dd',
+        'string.empty': 'حقل التاريخ مطلوب',
+        'any.required': 'هذا الحقل مطلوب'
+      });
+  static commentSchema = Joi
+  .string()
+  .max(150)
+  .allow("")
+  .messages({
+    'string.base': 'يجب أن يكون البيان نصا',
+    'string.max': 'البيان يجب أن لا يتجاوز 150 حرفا'
+  })
   constructor(date, comment)
   {
     this.setDate(date)
@@ -40,10 +55,16 @@ class TransactionMetaData
     return this.#comment
   }
 
+  toJson()
+  {
+    return {
+      date: this.getDate(),
+      comment: this.getComment(),
+    }
+  }
+
   static isTransactionMetaData(object)
   {
     return object instanceof TransactionMetaData
   }
 }
-
-export default TransactionMetaData

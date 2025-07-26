@@ -1,7 +1,7 @@
-import LightParticipant from "./LightParticipant";
-import Participant from "./Participant.js";
+import {LightParticipant} from "./LightParticipant.js";
+import {Participant} from "./Participant.js";
 
-class ParticipantsList
+export class ParticipantsList
 {
   #participants = [];
   #listType
@@ -31,10 +31,18 @@ class ParticipantsList
     }
   }
 
+  toJson()
+  {
+    return this.participants.map(particpant => particpant.toJson());
+  }
+
+  get participants()
+  {
+    return this.#participants;
+  }
+
   static isParticipantList(object)
   {
     return object instanceof ParticipantsList
   }
 }
-
-export default ParticipantsList

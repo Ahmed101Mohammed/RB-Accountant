@@ -1,8 +1,11 @@
 import BaseDB from "./BaseDB.js";
-import TransactionDBEntity from "../entities/TransactionBody.js";
-import TransactionEntity from "../entities/Transaction.js";
+// 2 Components commented here are probaply outdated ones (I mean that may I develkp other entities and comment these files internally)
+//import TransactionDBEntity from "../entities/TransactionBody.js";
+import { Transaction as TransactionEntity} from "../entities/transaction/Transaction.js"
+
 import ErrorHandler from "../utils/ErrorHandler.js";
-import TransactionBody from "../entities/transaction/TransactionBody.js";
+import {TransactionBody} from "../entities/transaction/TransactionBody.js";
+
 class Transaction
 {
   static isSetUped = false
@@ -42,7 +45,10 @@ class Transaction
                   transaction_id INTEGER NOT NULL,
                   account_id TEXT NOT NULL,
                   amount REAL NOT NULL,
-                  role INTEGER NOT NULL
+                  role INTEGER NOT NULL,
+
+                  FOREIGN KEY (transaction_id) REFERENCES transactions_heads(id) ON DELETE CASCADE,
+                  FOREIGN KEY (account_id) REFERENCES accounts(id)
                 ) STRICT`)
       createTransactions.run()
   }
@@ -147,11 +153,11 @@ class Transaction
           '2025-04-19', 'Second transaction',
           '2025-04-20', 'Third transaction'
         );
-    */
+		*/
     let init = `INSERT INTO transactions (transaction_id, account_id, amount, role) VALUES`
   }
 
-  static create(transactionBody)
+  static create(transactionBody) // Need to improve: The whole process must success, or failed (no partial success or failed).
   {
     if(!Transaction.isSetUped) Transaction.setUp()
     if(!TransactionBody.isTransactionBody(transactionBody)) throw new Error('Transaction.create method: expect TransactionBody object');
@@ -159,14 +165,24 @@ class Transaction
     const comment = transactionBody.getMetaData().getComment()
     const db = BaseDB.getDB()
     const createTransactionHeader = db.prepare('INSERT INTO transactions_heads (date, comment) VALUES (@date, @comment)')
-    const createTransactions =  db.prepare('INSERT INTO transactions (transaction_id, account_id, amount, role) VALUES (?, ?, ?, ?)')
+
+    const insertMany = db.transaction((transactionId, records)=>
+    {
+      const createTransaction =  db.prepare('INSERT INTO transactions (transaction_id, account_id, amount, role) VALUES (?, ?, ?, ?)')
+      for(const record of records)
+      {
+        createTransaction.run(transactionId, record.id, record.body.amount, record.body.role)
+      }
+    })
+
     try
     {
       const response = createTransactionHeader.run({
        date, comment
       })
       const transactionHeadId = response.lastInsertRowid;
-
+      if(!Array.isArray(transactionBody.participantsList.participants)) throw new Error('Transaction modle -> create method: expect transactionBody.participantsList.participants to be an array')
+      insertMany(transactionHeadId, [...transactionBody.participantsList.participants])
       return response
     }
     catch(error)
@@ -199,10 +215,9 @@ class Transaction
     // [{id, date, comment, amount, account_id, account_name, role, detail_id},...]
     try
     {
-      const transactions = query.all() 
-      const TransactionsEntities = TransactionEntity.createMultibleTransactionsEntities(transactions)
-      console.log({transactions})
-      return TransactionsEntities
+      const transactions = query.all()
+      const transactionEntities = TransactionEntity.createMultipleTransactions(transactions);
+      return transactionEntities;
     }
     catch(error)
     {
@@ -217,26 +232,27 @@ class Transaction
     if(!Transaction.isSetUped) Transaction.setUp()
     const db = BaseDB.getDB()
     const query = db.prepare(`SELECT 
-                                t.id AS id,
+                                th.id AS id,
+                                th.date AS date,
+                                th.comment AS comment,
                                 t.amount AS amount,
-                                t.debtor_id AS debtor_id,
-                                debtor.name AS debtor_name,
-                                t.creditor_id AS creditor_id,
-                                creditor.name AS creditor_name,
-                                t.comment AS comment,
-                                t.date AS date
-                              FROM transactions t
-                              LEFT JOIN 
-                                accounts debtor  ON t.debtor_id = debtor.id
-                              LEFT JOIN
-                                accounts creditor ON t.creditor_id = creditor.id
-                              WHERE t.id = @id
+                                t.account_id AS account_id,
+                                t.role AS role,
+                                acc.name AS account_name,
+                                t.id AS detail_id
+                              FROM transactions_heads th
+                              JOIN 
+                                transactions t ON t.transaction_id = th.id
+                              JOIN 
+                                accounts acc  ON acc.id = t.account_id
+                              WHERE
+                                th.id = @id
                               ORDER BY 
-                                t.date ASC, t.id ASC;`)
-    const transaction = query.get({id})
-    if(!transaction) return false
-    const TransactionsEntities = TransactionEntity.createMultibleTransactionsEntities([transaction])
-    return TransactionsEntities
+                                t.role ASC;`)
+    const transaction = query.all({id: id});
+    if(!transaction) return false;
+    const transactionsEntities = TransactionEntity.createMultipleTransactions(transaction);
+    return transactionsEntities;
   }
 
   static getAllTransactionsWithPaging(page)
@@ -340,31 +356,37 @@ class Transaction
     if(!Transaction.isSetUped) Transaction.setUp()
     const db = BaseDB.getDB()
     const query = db.prepare(`SELECT 
-                                t.id AS transaction_id,
-                                (
-                                    COALESCE((
-                                        SELECT SUM(CASE 
-                                                    WHEN t2.debtor_id = @accountId THEN t2.amount 
-                                                    ELSE -t2.amount 
-                                                  END)
-                                        FROM transactions t2
-                                        WHERE (t2.date < t.date OR (t2.date = t.date AND t2.id <= t.id))
-                                          AND (t2.debtor_id = @accountId OR t2.creditor_id = @accountId)
-                                    ), 0)
-                                ) AS balance,
+                                th.id AS transaction_id,
+                                th.date AS date,
+                                th.comment AS comment,
+                                t.role AS role,
                                 t.amount AS amount,
-                                CASE 
-                                    WHEN t.debtor_id = @accountId THEN 1
-                                    ELSE 0
-                                END AS role,
-                                t.comment AS comment,
-                                t.date AS date
+                                
+                                (
+                                    SELECT COALESCE(SUM(
+                                        CASE 
+                                            WHEN t2.role = 0 THEN t2.amount
+                                            ELSE -t2.amount
+                                        END
+                                    ), 0)
+                                    FROM transactions t2
+                                    JOIN transactions_heads th2 ON t2.transaction_id = th2.id
+                                    WHERE 
+                                        t2.account_id = @accountId
+                                        AND (
+                                            th2.date < th.date
+                                            OR (th2.date = th.date AND t2.id <= t.id)
+                                        )
+                                ) AS balance
+
                             FROM transactions t
+                            JOIN transactions_heads th ON t.transaction_id = th.id
                             WHERE 
-                                (t.date BETWEEN @startPeriod AND @endPeriod OR t.date BETWEEN @endPeriod AND @startPeriod)
-                                AND (t.debtor_id = @accountId OR t.creditor_id = @accountId)
+                                th.date BETWEEN MIN(@startPeriod, @endPeriod) AND MAX(@startPeriod, @endPeriod)
+                                AND t.account_id = @accountId
                             ORDER BY 
-                                t.date ASC, t.id ASC;
+                                th.date ASC, t.id ASC;
+
                             `
                               )
     const transactions = query.all({accountId, startPeriod, endPeriod})
@@ -408,16 +430,16 @@ class Transaction
                                 COALESCE(
                                   SUM(
                                     CASE
-                                      WHEN t.debtor_id = @accountId THEN t.amount
-                                      WHEN t.creditor_id = @accountId THEN -t.amount
-                                      ELSE 0
+                                      WHEN t.role = 0 THEN t.amount
+                                      ELSE -t.amount
                                     END
                                   ), 0
                                 ) AS balance
                               FROM transactions t
+                              JOIN transactions_heads th ON th.id = t.transaction_id
                               WHERE 
-                                t.date < @startPeriod
-                                AND (@accountId = t.debtor_id OR @accountId = t.creditor_id);
+                                th.date < @startPeriod
+                                AND t.account_id = @accountId;
                               `
                               )
     const balance = query.get({accountId, startPeriod})
@@ -428,9 +450,10 @@ class Transaction
   {
     if(!Transaction.isSetUped) Transaction.setUp()
     const db = BaseDB.getDB()
-    const query = db.prepare(`SELECT MIN(date) AS date
-                              FROM transactions
-                              WHERE debtor_id = @accountId OR creditor_id = @accountId;
+    const query = db.prepare(`SELECT MIN(th.date) AS date
+                              FROM transactions t
+                              JOIN transactions_heads th ON t.transaction_id = th.id
+                              WHERE t.account_id = @accountId;
                               `
                               )
     const date = query.get({accountId})
@@ -442,9 +465,10 @@ class Transaction
   {
     if(!Transaction.isSetUped) Transaction.setUp()
     const db = BaseDB.getDB()
-    const query = db.prepare(`SELECT MAX(date) AS date
-                              FROM transactions
-                              WHERE debtor_id = @accountId OR creditor_id = @accountId;
+    const query = db.prepare(`SELECT MAX(th.date) AS date
+                              FROM transactions t
+                              JOIN transactions_heads th ON t.transaction_id = th.id
+                              WHERE t.account_id = @accountId;
                               `
                               )
     const date = query.get({accountId})
@@ -452,44 +476,71 @@ class Transaction
     return date
   }
 
-  static delete(id)
+  static getAccountTransactionsCount(accountId)
   {
-    if(!Transaction.isSetUped) Transaction.setUp();
-    const db = BaseDB.getDB();
-    const query = db.prepare('DELETE FROM transactions WHERE id = @id');
-    const deleteResponse = query.run({
-      id
-    })
-    return deleteResponse
+    if(!Transaction.isSetUped) Transaction.setUp()
+    const db = BaseDB.getDB()
+    const accountTransactionsNumberQuery = db.prepare(`
+      SELECT COUNT(DISTINCT transaction_id) AS count
+      FROM transactions
+      WHERE account_id = @id;
+      `)
+    const accountTransactionsNumberResponse = accountTransactionsNumberQuery.all({id: accountId});
+    return accountTransactionsNumberResponse;
   }
 
-  static update(transactionId, transaction)
+  static delete(id)
+  {
+
+    if(!Transaction.isSetUped) Transaction.setUp();
+    const db = BaseDB.getDB();
+
+    const deleteTransaction = db.prepare('DELETE FROM transactions_heads WHERE id = @id');
+    return deleteTransaction.run({id});
+  }
+
+  static update(transactionId, transactionBody)
   {
     if(!Transaction.isSetUped) Transaction.setUp();
-    if(!TransactionDBEntity.isTransactionDBEntity(transaction)) throw new Error('Transaction.update method: expect Transaction object');
-    const transactionAmount = transaction.getAmount()
-    const transactionDebtorId = transaction.getDebtorId()
-    const transactionCreditorId = transaction.getCreditorId()
-    const transactionComment = transaction.getComment()
-    const transactionDate = transaction.getDate()
-    const db = BaseDB.getDB();
-    const query = db.prepare('UPDATE transactions SET amount=@amount, debtor_id=@debtor_id, creditor_id=@creditor_id, comment=@comment, date=@date WHERE id=@id');
+    if(!TransactionBody.isTransactionBody(transactionBody)) throw new Error('Transaction.update method: expect TransactionBody object');
+    const date = transactionBody.getMetaData().getDate()
+    const comment = transactionBody.getMetaData().getComment()
+    const db = BaseDB.getDB()
+
+    const updateTransaction = db.transaction((transactionId, participants)=>
+    {
+      const updateTransactionHead = db.prepare('UPDATE transactions_heads SET comment=@comment, date=@date WHERE id=@id');
+      const deleteTransactionDetails =  db.prepare('DELETE FROM transactions WHERE transaction_id = @id');
+      const createTransactionDetails =  db.prepare('INSERT INTO transactions (transaction_id, account_id, amount, role) VALUES (?, ?, ?, ?)');
+
+      let updateResponse = updateTransactionHead.run({id: transactionId, date, comment});
+      let deleteResponse = deleteTransactionDetails.run({id: transactionId});
+      let insertCount = 0;
+      for(const participant of participants)
+      {
+        let insertResponse = createTransactionDetails.run(transactionId, participant.id, participant.body.amount, participant.body.role)
+        insertCount += insertResponse.changes;
+      }
+      return {
+        transactionsHeads: updateResponse.changes,
+        transactionsDetails: {
+          delete: deleteResponse.changes,
+          create: insertCount,
+        }
+      }
+    })
+
     try
     {
-      const response = query.run({
-        id: transactionId,
-        amount: transactionAmount,
-        debtor_id: transactionDebtorId,
-        creditor_id: transactionCreditorId,
-        comment: transactionComment,
-        date: transactionDate
-      })
+      let participants = transactionBody.participants;
+      if(!Array.isArray(participants)) throw new Error('Transaction modle -> update method: expect transactionBody.participants to be an array')
+      let response = updateTransaction(transactionId, [...participants])
       return response
     }
     catch(error)
     {
       ErrorHandler.logError(error)
-      return error
+      throw error
     }
   }
 

@@ -1,8 +1,11 @@
 import BaseDB from "./BaseDB.js";
 import AccountEntity from "../entities/Account.js";
 import ErrorHandler from "../utils/ErrorHandler.js";
+import Transaction from "./Transaction.js";
+
 class Account
 {
+	
   static isSetUped = false
   static setUp()
   {
@@ -94,12 +97,11 @@ class Account
   static delete(id)
   {
     if(!Account.isSetUped) Account.setUp();
+    if(!Transaction.isSetUped) Transaction.setUp();
     const db = BaseDB.getDB();
-    const query = db.prepare('DELETE FROM accounts WHERE id = @id');
-    const deleteResponse = query.run({
-      id
-    })
-    return deleteResponse
+
+    const deleteAccount = db.prepare('DELETE FROM accounts WHERE id = @id');
+    return deleteAccount.run({id});
   }
 
   static update(account)

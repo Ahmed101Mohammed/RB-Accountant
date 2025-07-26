@@ -1,25 +1,26 @@
-import ParticipantsList from "./ParticipantsList.js";
-import TransactionMetaData from "./TransactionMetaData.js"
+import {ParticipantsList} from "./ParticipantsList.js";
+import {TransactionMetaData} from "./TransactionMetaData.js"
 
-class TransactionBody
+export class TransactionBody
 {
   #metaData
-  #participants
-  constructor(metaData, participants)
+  #participantsList
+  constructor(metaData, participantsList)
   {
-
+    this.metaData = metaData;
+    this.participantsList = participantsList;
   }
 
-  setMetaData(metaData)
+  set metaData(metaData)
   {
     if(!TransactionMetaData.isTransactionMetaData(metaData)) throw new Error(`TrnasactionBody expect TransactionMetaData object as a value for metaData member.`)
     this.#metaData = metaData;
   }
 
-  setParticipants(participants)
+  set participantsList(participantsList)
   {
-    if(!ParticipantsList.isParticipantList(participants)) throw new Error(`TrnasactionBody expect ParticipantList object as a value for participants memeber.`)
-    this.#participants = participants
+    if(!ParticipantsList.isParticipantList(participantsList)) throw new Error(`TrnasactionBody expect ParticipantList object as a value for participantsList memeber.`)
+    this.#participantsList = participantsList
   }
 
   static isTransactionBody(object)
@@ -32,10 +33,21 @@ class TransactionBody
     return this.#metaData
   }
 
-  getParticipants()
+  get participantsList()
   {
-    return this.#participants
+    return this.#participantsList
+  }
+
+  get participants()
+  {
+    return this.participantsList.participants;
+  }
+
+  toJson()
+  {
+    return {
+      metaData: this.getMetaData().toJson(),
+      participants: this.#participantsList.toJson(),
+    }
   }
 }
-
-export default TransactionBody

@@ -17,7 +17,10 @@
     "url": "git+https://github.com/Ahmed101Mohammed/RB-Accountant.git"
   },
   "license": "MIT",
-  "author": "Ahmed Al-3adl & Ibrahim Al-3adl",
+  "author": {
+    "name": "Ahmed Al-3adl",
+    "email": "ahmedmohamedal3adl@gmail.com"
+  },
   "type": "module",
   "main": "main.js",
   "scripts": {
@@ -26,11 +29,47 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "build": "electron-builder --win --x64"
+    "build": "electron-builder",
+    "rebuild": "electron-rebuild"
   },
-  "publish": {
-    "provider": "github",
-    "releaseType": "release"
+  "build": {
+    "appId": "com.RightBrothers.RB_Accountant",
+    "productName": "RB Accountant",
+    "publish": {
+      "provider": "github",
+      "releaseType": "release",
+      "owner": "Ahmed101Mohammed",
+      "repo": "RB-Accountant"
+    },
+     "files": [
+        "**/*",
+        "!out",
+        "!release/**/*",
+        "!*.log",
+        "!*.md",
+        "!LICENSE",
+        "package.json"
+      ],
+      "directories": {
+        "buildResources": "build",
+        "output": "release"
+      },
+      "win": {
+        "target": "nsis",
+        "icon": "build/icons/icon.ico"
+      },
+      "linux": {
+        "icon": "build/icons/icon.png",
+        "category": "Utility",
+        "target": ["AppImage", "deb"]
+      },
+      "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.7.0",

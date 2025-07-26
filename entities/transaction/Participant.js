@@ -1,9 +1,9 @@
 import Joi from "joi";
-import isValid from "../utils/isValid.js";
+import { isValid } from "../utils/isValid.js";
 import Account from "../Account.js";
-import ParticipantBody from "./ParticipantBody.js";
+import {ParticipantBody} from "./ParticipantBody.js";
 
-class Participant
+export class Participant
 {
   #body;
   #account;
@@ -18,7 +18,7 @@ class Participant
 
   setDBRecordId(dbRecordId)
   {
-    dbRecordId = dbRecordId.trim()
+    dbRecordId = dbRecordId.toString().trim()
     const schema = Participant.dbRecordIdShcema.required();
     const isValidDBRecordId = isValid(schema, dbRecordId)
     if(!isValidDBRecordId[0]) throw new Error(isValidDBRecordId[1].message)
@@ -51,11 +51,18 @@ class Participant
     return this.#body
   }
 
+  toJson()
+  {
+    return {
+      account: this.getAccount().toJson(),
+      dbRecordId: this.getDBRecordId(),
+      body: this.getBody().toJson(),
+    }
+  }
+
   isParticipant(object)
   {
     return object instanceof Participant;
   }
 
 }
-
-export default Participant
