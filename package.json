@@ -1,6 +1,6 @@
 {
   "name": "rb-accountant",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "The accountant app for my dad for his work.",
   "keywords": [
     "Desktop_App",
@@ -17,19 +17,59 @@
     "url": "git+https://github.com/Ahmed101Mohammed/RB-Accountant.git"
   },
   "license": "MIT",
-  "author": "Ahmed Al-3adl & Ibrahim Al-3adl",
+  "author": {
+    "name": "Ahmed Al-3adl",
+    "email": "ahmedmohamedal3adl@gmail.com"
+  },
   "type": "module",
   "main": "main.js",
   "scripts": {
+    "dev": "electron .",
     "start": "electron-forge start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "build": "electron-builder --win --x64"
+    "build": "electron-builder",
+    "rebuild": "electron-rebuild"
   },
-  "publish": {
-    "provider": "github",
-    "releaseType": "release"
+  "build": {
+    "appId": "com.RightBrothers.RB_Accountant",
+    "productName": "RB Accountant",
+    "publish": {
+      "provider": "github",
+      "releaseType": "release",
+      "owner": "Ahmed101Mohammed",
+      "repo": "RB-Accountant"
+    },
+     "files": [
+        "**/*",
+        "!out",
+        "!release/**/*",
+        "!*.log",
+        "!*.md",
+        "!LICENSE",
+        "package.json"
+      ],
+      "directories": {
+        "buildResources": "build",
+        "output": "release"
+      },
+      "win": {
+        "target": "nsis",
+        "icon": "build/icons/icon.ico"
+      },
+      "linux": {
+        "icon": "build/icons/icon.png",
+        "category": "Utility",
+        "target": ["AppImage", "deb"]
+      },
+      "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.7.0",
@@ -47,6 +87,9 @@
   "dependencies": {
     "better-sqlite3": "^11.8.1",
     "electron-squirrel-startup": "^1.0.1",
-    "joi": "^17.13.3"
+    "exceljs": "^4.4.0",
+    "joi": "^17.13.3",
+    "pdfkit": "^0.16.0",
+    "pdfkit-table": "^0.1.99"
   }
 }

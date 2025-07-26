@@ -1,92 +1,97 @@
-import Account from "./Account.js";
+// import Account from "./Account.js";
+// import TransactionDBEntity from "./TransactionBody.js";
+// import TransactionParticipant from "./TransactionParticipant.js";
 
-class Transaction
-{
-  #id;
-  #amount;
-  #debtorAccount;
-  #creditorAccount;
-  #comment;
-  #date;
-  constructor(id, amount, debtorAccount, creditorAccount, comment, date)
-  {
-    this.#id = id
-    this.#amount = amount
-    this.#debtorAccount = debtorAccount
-    this.#creditorAccount = creditorAccount
-    this.#comment = comment
-    this.#date = date
-  }
+// class Transaction
+// {
+//   #id;
+//   #date
+//   #comment
+//   #participants;
 
-  getId()
-  {
-    return this.#id
-  }
+//   constructor(id, date, comment, participants)// {id, date, comment, participants: [TransactionParticipant,...]}
+//   {
+//     this.#id = id
+//     this.#date = date
+//     this.#comment = comment
+//     for(let participant of participants)
+//     {
+//       if(!TransactionParticipant.isTransactionParticipant(participant)) throw new Error('Expect transaction particpants to be a TransactionParticipant instance')
+//     }
+//     this.#participants = participants
+//   }
 
-  getAmount() {
-    return this.#amount;
-  }
+//   toJson()
+//   {
+//     console.log("Error maybe here", this.getPaticipants())
+//     return {
+//       id: this.getId(),
+//       date: this.getDate(),
+//       comment: this.getComment(),
+//       participants: this.getPaticipants().map(particpant => particpant.toJson())
+//     }
+//   }
 
-  getDebtorAccount() {
-    return this.#debtorAccount;
-  }
+//   static isTransaction(object)
+//   {
+//     return object instanceof Transaction
+//   }
 
-  getCreditorAccount() {
-    return this.#creditorAccount;
-  }
+//   static createMultibleTransactionsEntities(transactionsData)
+//   {
+//     // [{id, date, comment, amount, account_id, account_name, state, detail_id},...]
+//     let transactions = [];
+//     let transaction_ = null;
+//     let curr_id = null;
+//     for(let transaction of transactionsData)
+//     {
+//       const {id, date, comment, amount, account_id, account_name, state, detail_id} = transaction;
+//       if(curr_id && curr_id !== id)
+//       {
+//         let newTransaction = new Transaction(transaction_.id, transaction_.date, transaction_.comment, transaction_.participants)
+//         transactions.push(newTransaction)
+//         curr_id = null;
+//         transaction_ = null;
+//       }
+//       if(!curr_id) curr_id = id
+//       if(!transaction_) transaction_ = {id: id, date: date, comment: comment, participants: []}
 
-  getComment() {
-    return this.#comment;
-  }
+//       const account = new Account(account_id, account_name)
+//       const participant = new TransactionParticipant(account, amount, state, detail_id)
+//       transaction_.participants.push(participant)
+//     }
+//     return transactions
+//   }
 
-  getDate() {
-    return this.#date;
-  }
+//   getId()
+//   {
+//     return this.#id
+//   }
 
-  toJson()
-  {
-    return {
-      id: this.getId(),
-      amount: this.getAmount(),
-      debtorAccount: this.getDebtorAccount().toJson(),
-      creditorAccount: this.getCreditorAccount().toJson(),
-      comment: this.getComment(),
-      date: this.getDate()
-    }
-  }
+//   getPaticipants()
+//   {
+//     return this.#participants
+//   }
 
-  static isTransaction(object)
-  {
-    return object instanceof Transaction
-  }
+//   getDate()
+//   {
+//     return this.#date
+//   }
 
-  static createMultibleTransactionsEntities(transactionsData)
-  {
-    let transactions = [];
-    for(let transaction of transactionsData)
-    {
-      const debtor = new Account(transaction.debtor_id, transaction.debtor_name)
-      const creditor = new Account(transaction.creditor_id, transaction.creditor_name)
-      let newtransaction = new Transaction(transaction.id, transaction.amount, debtor, creditor, transaction.comment, transaction.date)
-      transactions.push(newtransaction)
-    }
-    return transactions
-  }
+//   getComment()
+//   {
+//     return this.#comment
+//   }
 
-  static print(transaction)
-  {
-    if(transaction.istransaction(transaction))
-    {
-      console.log({
-        id: transaction.getId(), 
-        amount: transaction.getAmount(),
-        debtorAccount: transaction.getDebtorAccount().print(),
-        creditorAccount: transaction.getCreditorAccount().print(),
-        comment: transaction.getComment(),
-        date: transaction.getDate()
-      })
-    }
-  }
-}
+//   print()
+//   {
+//     console.log({
+//       id: this.getId(),
+//       comment: this.getComment(),
+//       date: this.getDate(),
+//       participants: this.getPaticipants().map(participant => participant.toJson())
+//     })
+//   }
+// }
 
-export default Transaction
+// export default Transaction

@@ -1,41 +1,20 @@
 import Joi from "joi";
+
 import Response from "../utils/Response.js";
 import AccountEntity from "../entities/Account.js";
 import AccountModel from "../models/Account.js";
+
 class Account
 {
-  static async create(id, name)
+  static create(id, name)
   {
     const userData = {
       id: id.trim(),
       name: name.trim()
     }
     const schema = Joi.object({
-      id: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .min(1)
-        .max(20)
-        .required()
-        .messages({
-          'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'any.required': 'يجب أن يكون للحساب كود',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط'
-        }),
-      name: Joi
-        .string()
-        .pattern(/^[^\d].*$/, 'اسم الحساب يجب أن يبدأ بحرف')
-        .min(2)
-        .max(100)
-        .required()
-        .messages({
-          'string.base': 'يجب أن يكون الإسم نصا',
-          'string.min': 'يجب أن يحتوي الإسم على حرفان على الأقل',
-          'string.max': 'إسم الحساب يجب أن لا يتجاوز 100 حرفا',
-          'any.required': 'يجب أن يكون للحساب اسم',
-          'string.pattern.base': 'اسم الحساب يجب أن يبدأ بحرف'
-        })
+      id: AccountEntity.idSchema.required(),
+      name: AccountEntity.nameSchema.required()
     })
 
     const validationResponse = schema.validate(userData)
@@ -47,7 +26,7 @@ class Account
     const newAccount = new AccountEntity(userData.id, userData.name)
     try
     {
-      const response = await AccountModel.create(newAccount)
+      const response = AccountModel.create(newAccount)
       return new Response(true, null, response)
     }
     catch(error)
@@ -56,11 +35,11 @@ class Account
     }
   }
   
-  static async getAllAccounts()
+  static getAllAccounts()
   {
     try
     {
-      const accounts = await AccountModel.getAllAccounts()
+      const accounts = AccountModel.getAllAccounts()
       return new Response(true, null, accounts)
     }
     catch(error)
@@ -69,20 +48,14 @@ class Account
     }
   }
 
-  static async getAccountByName(name)
+  static getAccountByName(name)
   {
     const userData = {
       name: name.trim()
     }
 
     const schema = Joi.object({
-      name: Joi
-        .string()
-        .pattern(/^[^\d].*$/, 'اسم الحساب يجب أن يبدأ بحرف')
-        .max(100)
-        .messages({
-          'string.max': 'إسم الحساب يجب أن لا يتجاوز 100 حرفا'
-        })
+      name: AccountEntity.nameSearchSchema
     })
 
     const validationResponse = schema.validate(userData)
@@ -93,30 +66,26 @@ class Account
 
     try
     {
-      const account = await AccountModel.getAccountByName(userData.name)
-      if(!account) return new Response(false, `لا يوجد حساب بهذا الإسم ${userData.name}`)
+      const account = AccountModel.getAccountByName(userData.name)
+      if(!account) 
+			{
+				return new Response(false, `لا يوجد حساب بهذا الإسم ${userData.name}`)
+			}
       return new Response(true, null, account)
     }
     catch(error)
     {
-      return new Response(false, error.message)
+     return new Response(false, error.message)
     }
   }
 
-  static async getAccountById(id)
+  static getAccountById(id)
   {
     const userData = {
       id: id.trim(),
     }
     const schema = Joi.object({
-      id: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .max(20)
-        .messages({
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط',
-        }),
+      id: AccountEntity.idSchema
     })
 
     const validationResponse = schema.validate(userData)
@@ -127,8 +96,11 @@ class Account
 
     try
     {
-      const account = await AccountModel.getAccountById(id)
-      if(!account) return new Response(false, `لا يوجد حساب بهاذا الكود ${id}`)
+      const account = AccountModel.getAccountById(id)
+      if(!account) 
+			{
+				return new Response(false, `لا يوجد حساب بهاذا الكود ${id}`)
+			}
       return new Response(true, null, account)
     }
     catch(error)
@@ -137,19 +109,14 @@ class Account
     }
   }
 
-  static async getAccountsItsNameContain(partialName)
+  static getAccountsItsNameContain(partialName)
   {
     const userData = {
       name: partialName
     }
 
     const schema = Joi.object({
-      name: Joi
-        .string()
-        .max(100)
-        .messages({
-          'string.max': 'إسم الحساب يجب أن لا يتجاوز 100 حرفا'
-        })
+      name: AccountEntity.nameSearchSchema
     })
 
     const validationResonse = schema.validate(userData)
@@ -160,7 +127,7 @@ class Account
 
     try
     {
-      const accounts = await AccountModel.getAccountsItsNameContain(partialName)
+      const accounts = AccountModel.getAccountsItsNameContain(partialName)
       return new Response(true, null, accounts)
     }
     catch(error)
@@ -169,21 +136,14 @@ class Account
     }
   }
 
-  static async getAccountsItsIdContain(partialId)
+  static getAccountsItsIdContain(partialId)
   {
     const userData = {
       id: partialId
     }
 
     const schema = Joi.object({
-      id: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .max(20)
-        .messages({
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط',
-        }),
+      id: AccountEntity.idSchema
     })
 
     const validationResonse = schema.validate(userData)
@@ -194,7 +154,7 @@ class Account
 
     try
     {
-      const accounts = await AccountModel.getAccountsItsIdContain(partialId)
+      const accounts = AccountModel.getAccountsItsIdContain(partialId)
       return new Response(true, null, accounts)
     }
     catch(error)
@@ -203,24 +163,13 @@ class Account
     }
   }
 
-  static async delete(id)
+  static delete(id)
   {
     const userData = {
       id: id.trim()
     }
     const schema = Joi.object({
-      id: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .min(1)
-        .max(20)
-        .required()
-        .messages({
-          'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'any.required': 'يجب أن يكون للحساب كود',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط'
-        })
+      id: AccountEntity.idSchema.required()
     })
 
     const validationResponse = schema.validate(userData)
@@ -230,7 +179,7 @@ class Account
     }
     try
     {
-      const response = await AccountModel.delete(id)
+      const response = AccountModel.delete(id)
       return new Response(true, null, response)
     }
     catch(error)
@@ -239,38 +188,15 @@ class Account
     }
   }
 
-  static async update(id, name)
+  static update(id, name)
   {
     const userData = {
       id: id.trim(),
       name: name.trim()
     }
     const schema = Joi.object({
-      id: Joi
-        .string()
-        .pattern(/^\d+$/, 'كود الحساب يحتوي على أرقام فقط')
-        .min(1)
-        .max(20)
-        .required()
-        .messages({
-          'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
-          'string.max': 'أقصى طول لكود الحساب 20 رقما',
-          'any.required': 'يجب أن يكون للحساب كود',
-          'string.pattern.base': 'كود الحساب يحتوي على أرقام فقط'
-        }),
-      name: Joi
-        .string()
-        .pattern(/^[^\d].*$/, 'اسم الحساب يجب أن يبدأ بحرف')
-        .min(2)
-        .max(100)
-        .required()
-        .messages({
-          'string.base': 'يجب أن يكون الإسم نصا',
-          'string.min': 'يجب أن يحتوي الإسم على حرفان على الأقل',
-          'string.max': 'إسم الحساب يجب أن لا يتجاوز 100 حرفا',
-          'any.required': 'يجب أن يكون للحساب اسم',
-          'string.pattern.base': 'اسم الحساب يجب أن يبدأ بحرف'
-        })
+      id: AccountEntity.idSchema.required(),
+      name: AccountEntity.nameSchema.required()
     })
 
     const validationResponse = schema.validate(userData)
@@ -282,7 +208,7 @@ class Account
     const updatedAccount = new AccountEntity(userData.id, userData.name)
     try
     {
-      const response = await AccountModel.update(updatedAccount)
+      const response = AccountModel.update(updatedAccount)
       return new Response(true, null, response)
     }
     catch(error)

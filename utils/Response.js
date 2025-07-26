@@ -60,6 +60,7 @@ class Response
       message: this.#message,
       data: dataInJson
     }
+		
   }
 }
 

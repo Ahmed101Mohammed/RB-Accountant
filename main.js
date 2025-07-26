@@ -1,17 +1,21 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import path from 'node:path'
+import { fileURLToPath } from 'url';
 import Account from './controllers/Account.js';
 import Transaction from './controllers/Transaction.js';
-import { fileURLToPath } from 'url';
+import generatePDF from './services/exportPdf.js';
+import generateExcel from './services/exportExcel.js';
+import { Employee } from './controllers/Employee.js';
 
 // preload absolute path
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const preloadLocation = path.resolve(__dirname, 'preload.js')
 
 const createWindow = () => {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width, height,
+    resizable: true,
     webPreferences: {
       preload: preloadLocation,
       contextIsolation: true,
@@ -19,7 +23,6 @@ const createWindow = () => {
       enableRemoteModule: false
     }
   })
-
   // win.loadURL('http://localhost:9000/')
   win.loadFile('./dist/index.html')
 }
@@ -28,112 +31,193 @@ app.on('window-all-closed', ()=>
 {
   if(process.platform !== 'darwin') app.quit()
 })
-app.whenReady().then(() => {
-  ipcMain.handle('getAllAccounts', async()=> {
-    let response = await Account.getAllAccounts()
+
+// Accounts
+app.whenReady().then(async () => {
+  ipcMain.handle('getAllAccounts', ()=> {
+    let response = Account.getAllAccounts()
     return response.toJson()
   })
 
-  ipcMain.handle('createAccount', async(event, id, name)=>
+  ipcMain.handle('createAccount', (event, id, name)=>
   {
-    let response = await Account.create(id, name)
+    let response = Account.create(id, name)
     return response.toJson()
   })
 
-  ipcMain.handle('deleteAccount', async(event, id) =>
+  ipcMain.handle('deleteAccount', (event, id) =>
   {
-    let response = await Account.delete(id)
+    let response = Account.delete(id)
     return response.toJson()
   })
 
-  ipcMain.handle('updateAccount', async(event, id, name) =>
+  ipcMain.handle('updateAccount', (event, id, name) =>
   {
-    let response = await Account.update(id, name)
+    let response = Account.update(id, name)
     return response.toJson()
   })
 
-  ipcMain.handle('createTransaction', async(event, amount, debtorId, creditorId, comment, date) =>
+  ipcMain.handle('createTransaction', (event, transactionData) =>
   {
-    let response = await Transaction.create(amount, debtorId, creditorId, comment, date)
+    let response = Transaction.create(transactionData)
     return response.toJson()
   })
 
-  ipcMain.handle('getAccountsItsIdContain', async(event, partialId) =>
+  ipcMain.handle('getAccountsItsIdContain', (event, partialId) =>
   {
-    let response = await Account.getAccountsItsIdContain(partialId)
+    let response = Account.getAccountsItsIdContain(partialId)
     return response.toJson()
   })
 
-  ipcMain.handle('getAllTransactions', async() =>
+  ipcMain.handle('getAccountsItsNameContain', (event, partialName)=>
   {
-    let response = await Transaction.getAllTransactions()
+    let response = Account.getAccountsItsNameContain(partialName)
+    return response.toJson()
+  })
+  // Empolyees
+  ipcMain.handle('getAllEmployees', ()=> {
+    let response = Employee.getAllEmployees()
     return response.toJson()
   })
 
-  ipcMain.handle('deleteTransaction', async(evnet, id) =>
+  ipcMain.handle('createEmployee', (event, id, name) =>
   {
-    let response = await Transaction.delete(id)
+    let response = Employee.create(id, name); 
+    return response.toJson();
+  })
+
+  ipcMain.handle('getEmployeeById', (event, id) =>
+  {
+    let response = Employee.getEmployeeById(id);
+    return response.toJson();
+  })
+
+  ipcMain.handle('updateEmployee', (event, internalId, body) =>
+  {
+    let response = Employee.update(internalId, body);
+    return response.toJson();
+  })
+
+  ipcMain.handle('getEmployeesItsIdContain', (event, partialId) =>
+  {
+    let response = Employee.getEmployeesItsIdContain(partialId)
     return response.toJson()
   })
 
-  ipcMain.handle('updateTransaction', async(event, id, amount, debtorId, creditorId, comment, date) =>
+  ipcMain.handle('getEmployeesItsNameContain', (event, partialName)=>
   {
-    let response = await Transaction.update(id, amount, debtorId, creditorId, comment, date)
+    let response = Employee.getEmployeesItsNameContain(partialName)
     return response.toJson()
   })
 
-  ipcMain.handle('getAllTransactionsForAccountForPeriod', async(event, id, startPeriod, endPeriod) =>
+  ipcMain.handle('deleteEmployee', (event, internalId) =>
   {
-    let response = await Transaction.getAllTransactionsForAccountForPeriod(id, startPeriod, endPeriod)
+    let response = Employee.delete(internalId);
+    return response.toJson();
+  })
+
+  // Machines
+  await import('./features/machines/view/preloadHandler.js');
+
+  // Items
+  await import('./features/items/view/preloadHandler.js');
+
+  // DailyProduction
+  await import('./features/dailyProduction/view/preloadHandler.js');
+  
+  // Transactions
+  ipcMain.handle('getAllTransactions', () =>
+  {
+    let response = Transaction.getAllTransactions() 
     return response.toJson()
   })
 
-  ipcMain.handle('getAllTransactionsForSpecificPeriod', async(event, startPeriod, endPeriod) =>
+  ipcMain.handle('deleteTransaction', (evnet, id) =>
   {
-    let response = await Transaction.getAllTransactionsForSpecificPeriod(startPeriod, endPeriod)
+    let response = Transaction.delete(id)
     return response.toJson()
   })
 
-  ipcMain.handle('getAllTransactionsForAccount', async(event, id) =>
+  ipcMain.handle('updateTransaction', (event, id, transactionData) =>
   {
-    let response = await Transaction.getAllTransactionsForAccount(id)
+    let response = Transaction.update(id, transactionData)
     return response.toJson()
   })
 
-  ipcMain.handle('getAccountById', async(event, id)=>
+  ipcMain.handle('getAllTransactionsForAccountForPeriod', (event, id, startPeriod, endPeriod) =>
   {
-    let response = await Account.getAccountById(id)
+    let response = Transaction.getAllTransactionsForAccountForPeriod(id, startPeriod, endPeriod)
     return response.toJson()
   })
 
-  ipcMain.handle('getAccountBalanceAtStartPeriod', async(event, id, startPeriod) =>
+  ipcMain.handle('getAllTransactionsForSpecificPeriod', (event, startPeriod, endPeriod) =>
   {
-    let response = await Transaction.getAccountBalanceAtStartPeriod(id, startPeriod)
+    let response = Transaction.getAllTransactionsForSpecificPeriod(startPeriod, endPeriod)
     return response.toJson()
   })
 
-  ipcMain.handle('getAcccountStatementForSpecificPeriod', async(event, id, startPeriod, endPeriod)=>
+  ipcMain.handle('getAllTransactionsForAccount', (event, id) =>
   {
-    let response = await Transaction.getAcccountStatementForSpecificPeriod(id, startPeriod, endPeriod)
+    let response = Transaction.getAllTransactionsForAccount(id)
     return response.toJson()
   })
 
-  ipcMain.handle('getAccountsItsNameContain', async(event, partialName)=>
+  ipcMain.handle('getAccountById', (event, id)=>
   {
-    let response = await Account.getAccountsItsNameContain(partialName)
+    let response = Account.getAccountById(id)
     return response.toJson()
   })
 
-  ipcMain.handle('getAllTransactionsWithPaging', async(event, page)=>
+  ipcMain.handle('getAccountBalanceAtStartPeriod', (event, id, startPeriod) =>
   {
-    let response = await Transaction.getAllTransactionsWithPaging(page)
+    let response = Transaction.getAccountBalanceAtStartPeriod(id, startPeriod)
     return response.toJson()
   })
 
-  ipcMain.handle('getTransactionById', async(event, id)=>
+  ipcMain.handle('getAcccountStatementForSpecificPeriod', (event, id, startPeriod, endPeriod)=>
   {
-    let response = await Transaction.getTransactionById(id)
+    let response = Transaction.getAcccountStatementForSpecificPeriod(id, startPeriod, endPeriod)
     return response.toJson()
+  })
+
+  ipcMain.handle('getAllTransactionsWithPaging', (event, page)=>
+  {
+    let response = Transaction.getAllTransactionsWithPaging(page)
+    return response.toJson()
+  })
+
+  ipcMain.handle('getTransactionById', (event, id)=>
+  {
+    let response = Transaction.getTransactionById(id)
+    return response.toJson()
+  })
+
+  ipcMain.handle('getFirstTransactionDateOfAccount', (event, id)=>
+  {
+    let response = Transaction.getFirstTransactionDateOfAccount(id)
+    return response.toJson()
+  })
+
+  ipcMain.handle('getLastTransactionDateOfAccount', (event, id)=>
+  {
+    let response = Transaction.getLastTransactionDateOfAccount(id)
+    return response.toJson()
+  })
+
+  ipcMain.handle('getAccountTransactionsCount', (event, accountId) =>
+  {
+    let response = Transaction.getAccountTransactionsCount(accountId)
+    return response.toJson()
+  })
+
+  ipcMain.handle('exportPDF', (event, data)=>
+  {
+    generatePDF(data)
+  })
+
+  ipcMain.handle('exportExcel', (event, data)=>
+  {
+    generateExcel(data)
   })
 
   createWindow()

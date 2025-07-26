@@ -1,7 +1,44 @@
+import Joi from "joi";
+
 class Account
 {
   #id;
   #name;
+  static idSchema = Joi
+    .string()
+    .pattern(/^[A-Za-z0-9]+$/, 'كود الحساب يحتوي على أرقام وأحرف فقط')
+    .min(1)
+    .max(20)
+    .messages({
+      'string.min': 'كود الحسب يتكون على الأقل من رقم واحد',
+      'string.max': 'أقصى طول لكود الحساب 20 رقما',
+      'string.pattern.base': 'كود الحساب يحتوي على أرقام وأحرف فقط'
+    })
+
+  static nameSchema = Joi
+    .string()
+    .pattern(/^[^\d].*$/, 'اسم الحساب يجب أن يبدأ بحرف')
+    .min(2)
+    .max(100)
+    .messages({
+      'string.base': 'يجب أن يكون الإسم نصا',
+      'string.min': 'يجب أن يحتوي الإسم على حرفان على الأقل',
+      'string.max': 'إسم الحساب يجب أن لا يتجاوز 100 حرفا',
+      'any.required': 'يجب أن يكون للحساب اسم',
+      'string.pattern.base': 'اسم الحساب يجب أن يبدأ بحرف'
+    })
+
+  static nameSearchSchema = Joi
+  .string()
+  .pattern(/^[^\d].*$/, 'اسم الحساب يجب أن يبدأ بحرف')
+  .max(100)
+  .messages({
+    'string.base': 'يجب أن يكون الإسم نصا',
+    'string.min': 'يجب أن يحتوي الإسم على حرفان على الأقل',
+    'string.max': 'إسم الحساب يجب أن لا يتجاوز 100 حرفا',
+    'any.required': 'يجب أن يكون للحساب اسم',
+    'string.pattern.base': 'اسم الحساب يجب أن يبدأ بحرف'
+  })
   constructor(id, name)
   {
     this.#id = id
