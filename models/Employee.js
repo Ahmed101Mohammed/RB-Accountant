@@ -48,7 +48,7 @@ export class Employee
   {
     if(!Employee.isSetUped) Employee.setUp()
     const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM employees')
+    const query = db.prepare('SELECT * FROM employees ORDER BY id ASC;')
     const employees = query.all();
     const employeesEntities = EmployeeEntity.createMultibleEmployeesEntities(employees)
     return employeesEntities

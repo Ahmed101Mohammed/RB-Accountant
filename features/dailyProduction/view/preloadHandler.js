@@ -24,6 +24,18 @@ ipcMain.handle('getDailyProductionById', (event, dailyProductionId)=>
   return response.toJson();
 })
 
+ipcMain.handle('getItemStartAndEndProductionsDate', (event, itemId)=>
+{
+  let response = DailyProduction.getItemStartAndEndProductionsDate(itemId);
+  return response.toJson();
+})
+
+ipcMain.handle('getItemProductionQuantitiesTotalForAPeriod', (event, itemId, startPeriod, endPeriod)=>
+{
+  let response = DailyProduction.getItemProductionQuantitiesTotalForAPeriod(itemId, startPeriod, endPeriod);
+  return response.toJson();
+})
+
 ipcMain.handle('deleteDailyProductionById', (event, dailyProductionId)=>
 {
   let response = DailyProduction.delete(dailyProductionId);

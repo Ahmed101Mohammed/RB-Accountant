@@ -42,7 +42,9 @@ contextBridge.exposeInMainWorld('apis', {
   getDailyProductionById: (dailyProductionId) => ipcRenderer.invoke('getDailyProductionById', dailyProductionId),
   deleteDailyProductionById: (dailyProductionId) => ipcRenderer.invoke('deleteDailyProductionById', dailyProductionId),
   updateDailyProductionWithId: (dailyProductionId, dailyProductionData) => ipcRenderer.invoke('updateDailyProductionWithId', dailyProductionId, dailyProductionData),
-
+  getItemStartAndEndProductionsDate: (itemId) => ipcRenderer.invoke('getItemStartAndEndProductionsDate', itemId),
+  getItemProductionQuantitiesTotalForAPeriod: (itemId, startPeriod, endPeriod) => ipcRenderer.invoke('getItemProductionQuantitiesTotalForAPeriod', itemId, startPeriod, endPeriod),
+  
   // Transaction
   createTransaction: (transactionData) => ipcRenderer.invoke('createTransaction', transactionData),
   getAllTransactions: ()=> ipcRenderer.invoke('getAllTransactions'),

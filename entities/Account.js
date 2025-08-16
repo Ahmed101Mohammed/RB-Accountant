@@ -6,7 +6,7 @@ class Account
   #name;
   static idSchema = Joi
     .string()
-    .pattern(/^[A-Za-z0-9]+$/, 'كود الحساب يحتوي على أرقام وأحرف فقط')
+    .pattern(/^[A-Za-z0-9\-]+$/, 'كود الحساب يحتوي على أرقام وأحرف إنجليزية وعلامة "-" فقط')
     .min(1)
     .max(20)
     .messages({
