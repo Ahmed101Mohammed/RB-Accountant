@@ -54,7 +54,6 @@ class Response
       dataInJson.push(this.#data)
     }
 
-    
     return {
       state: this.#state,
       message: this.#message,

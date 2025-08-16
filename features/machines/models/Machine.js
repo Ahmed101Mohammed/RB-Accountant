@@ -48,7 +48,7 @@ export class Machine
   {
     if(!Machine.isSetUped) Machine.setUp()
     const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM machines')
+    const query = db.prepare('SELECT * FROM machines ORDER BY id ASC;')
     const machines = query.all();
     const machinesEntities = MachineEntity.createMultibleMachinesEntities(machines)
     return machinesEntities

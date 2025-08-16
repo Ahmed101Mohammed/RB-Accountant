@@ -48,7 +48,7 @@ export class Item
   {
     if(!Item.isSetUped) Item.setUp()
     const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM items')
+    const query = db.prepare('SELECT * FROM items ORDER BY id ASC;')
     const items = query.all();
     const itemsEntities = ItemEntity.createMultibleItemsEntities(items)
     return itemsEntities
@@ -73,6 +73,22 @@ export class Item
     let itemBody = new ItemBody(item.id, item.name);
     let itemEntity = new ItemEntity(item.internal_id, itemBody);
     if(item) return itemEntity;
+    return false
+  }
+
+  static getItemByIdExactly(id)
+  {
+    if(!Item.isSetUped) Item.setUp()
+    const db = BaseDB.getDB()
+    const query = db.prepare('SELECT * FROM items WHERE id = @id')
+    let item = query.get({id});
+  
+    if(item) 
+    {
+      const itemBody = new ItemBody(item.id, item.name);
+      const itemEntity = new ItemEntity(item.internal_id, itemBody);
+      return itemEntity;
+    }
     return false
   }
 
@@ -156,28 +172,5 @@ export class Item
     {
       throw error;
     }
-  }
-
-  static getMissingIds(ids) {
-    if (!ids.length) return [];
-
-    const db = BaseDB.getDB();
-
-    // Create the VALUES list: (?, ?), (?, ?), ...
-    const valuesClause = ids.map(() => '(?)').join(', ');
-    const query = `
-      WITH input_ids(id) AS (
-        VALUES ${valuesClause}
-      )
-      SELECT input_ids.id
-      FROM input_ids
-      LEFT JOIN items ON input_ids.id = items.id
-      WHERE items.id IS NULL;
-    `;
-
-    const stmt = db.prepare(query);
-    const result = stmt.all(...ids);
-
-    return result.map(row => row.id);
   }
 }

@@ -403,231 +403,57 @@ export class DailyProduction
     }
   }
 
-  // static getAllDailyProductionsWithPaging(page)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const pageSize = 3;
-  //   const offset = page * pageSize
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT 
-  //                               t.id AS id,
-  //                               t.amount AS amount,
-  //                               t.debtor_id AS debtor_id,
-  //                               debtor.name AS debtor_name,
-  //                               t.creditor_id AS creditor_id,
-  //                               creditor.name AS creditor_name,
-  //                               t.comment AS comment,
-  //                               t.date AS date
-  //                             FROM dailyProductions t
-  //                             JOIN 
-  //                               accounts debtor  ON t.debtor_id = debtor.id
-  //                             JOIN
-  //                               accounts creditor ON t.creditor_id = creditor.id
-  //                             ORDER BY 
-  //                               t.date ASC, t.id ASC
-  //                               LIMIT @pageSize OFFSET @offset;`)
-  //   const dailyProductions = query.all({
-  //     pageSize: pageSize,
-  //     offset: offset
-  //   })
-  //   const DailyProductionsEntities = DailyProductionEntity.createMultibleDailyProductionsEntities(dailyProductions)
-  //   return DailyProductionsEntities
-  // }
+  static getItemStartAndEndProductionsDate = (itemId)=>
+  {
+     if(!DailyProduction.isSetUped) DailyProduction.setUp()
+    const db = BaseDB.getDB()
+    const query = db.prepare(`
+      SELECT MIN(dp.date) as startPeriod, MAX(dp.date) as endPeriod
+      FROM shifts_items si
+      JOIN shifts ON shifts.id = si.shift_id
+      JOIN daily_production dp ON dp.id = shifts.daily_production_id
+      JOIN items ON si.item_id = items.internal_id
+      WHERE items.id = @id;
+    `)
+    try
+    {
+      const startAndEndPeriods = query.get({id: itemId});
+      return startAndEndPeriods;
+    }
+    catch(error)
+    {
+      ErrorHandler.logError(error);
+      throw error;
+    }
 
-  // static getAllDailyProductionsForSpecificPeriod(startPeriod, endPeriod)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT 
-  //                               t.id AS id,
-  //                               t.amount AS amount,
-  //                               t.debtor_id AS debtor_id,
-  //                               debtor.name AS debtor_name,
-  //                               t.creditor_id AS creditor_id,
-  //                               creditor.name AS creditor_name,
-  //                               t.comment AS comment,
-  //                               t.date AS date
-  //                             FROM dailyProductions t
-  //                             JOIN 
-  //                               accounts debtor  ON t.debtor_id = debtor.id
-  //                             JOIN
-  //                               accounts creditor ON t.creditor_id = creditor.id
-  //                             WHERE 
-  //                               (
-  //                                 (t.date BETWEEN @startPeriod AND @endPeriod)
-  //                               OR
-  //                                 (t.date BETWEEN @endPeriod AND @startPeriod)
-  //                               ) 
-  //                             ORDER BY 
-  //                               t.date ASC, t.id ASC;`
-  //                             )
-  //   const dailyProductions = query.all({startPeriod, endPeriod})
-  //   const dailyProductionsEntities = DailyProductionEntity.createMultibleDailyProductionsEntities(dailyProductions)
-  //   return dailyProductionsEntities
-  // }
+  }
 
-  // static getAllDailyProductionsForAccountForPeriod(accountId, startPeriod, endPeriod)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT 
-  //                               t.id AS id,
-  //                               t.amount AS amount,
-  //                               t.debtor_id AS debtor_id,
-  //                               debtor.name AS debtor_name,
-  //                               t.creditor_id AS creditor_id,
-  //                               creditor.name AS creditor_name,
-  //                               t.comment AS comment,
-  //                               t.date AS date
-  //                             FROM dailyProductions t
-  //                             JOIN 
-  //                               accounts debtor  ON t.debtor_id = debtor.id
-  //                             JOIN
-  //                               accounts creditor ON t.creditor_id = creditor.id
-  //                             WHERE 
-  //                               (
-  //                                 (t.date BETWEEN @startPeriod AND @endPeriod)
-  //                               OR
-  //                                 (t.date BETWEEN @endPeriod AND @startPeriod)
-  //                               ) 
-  //                             AND 
-  //                                 (debtor.id = @accountId OR creditor.id = @accountId)
-  //                             ORDER BY 
-  //                               t.date ASC, t.id ASC;`
-  //                             )
-  //   const dailyProductions = query.all({accountId, startPeriod, endPeriod})
-  //   const dailyProductionsEntities = DailyProductionEntity.createMultibleDailyProductionsEntities(dailyProductions)
-  //   return dailyProductionsEntities
-  // }
-  // static getAcccountStatementForSpecificPeriod(accountId, startPeriod, endPeriod)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT 
-  //                               t.id AS dailyProduction_id,
-  //                               (
-  //                                   COALESCE((
-  //                                       SELECT SUM(CASE 
-  //                                                   WHEN t2.debtor_id = @accountId THEN t2.amount 
-  //                                                   ELSE -t2.amount 
-  //                                                 END)
-  //                                       FROM dailyProductions t2
-  //                                       WHERE (t2.date < t.date OR (t2.date = t.date AND t2.id <= t.id))
-  //                                         AND (t2.debtor_id = @accountId OR t2.creditor_id = @accountId)
-  //                                   ), 0)
-  //                               ) AS balance,
-  //                               t.amount AS amount,
-  //                               CASE 
-  //                                   WHEN t.debtor_id = @accountId THEN 1
-  //                                   ELSE 0
-  //                               END AS role,
-  //                               t.comment AS comment,
-  //                               t.date AS date
-  //                           FROM dailyProductions t
-  //                           WHERE 
-  //                               (t.date BETWEEN @startPeriod AND @endPeriod OR t.date BETWEEN @endPeriod AND @startPeriod)
-  //                               AND (t.debtor_id = @accountId OR t.creditor_id = @accountId)
-  //                           ORDER BY 
-  //                               t.date ASC, t.id ASC;
-  //                           `
-  //                             )
-  //   const dailyProductions = query.all({accountId, startPeriod, endPeriod})
+  static getItemProductionQuantitiesTotalForAPeriod = (itemId, startPeriod, endPeriod)=>
+  {
+     if(!DailyProduction.isSetUped) DailyProduction.setUp()
+    const db = BaseDB.getDB()
+    const query = db.prepare(`
+      SELECT COALESCE(SUM(sia.high_quality_quantity), 0) AS highQualityQuantity,
+              COALESCE(SUM(sia.low_quality_quantity), 0) AS lowQualityQuantity
+      FROM shifts_items si
+      JOIN shifts ON shifts.id = si.shift_id
+      JOIN daily_production dp ON dp.id = shifts.daily_production_id
+      JOIN shifts_items_assignments sia ON sia.shift_item_id = si.id
+      JOIN items ON si.item_id = items.internal_id
+      WHERE items.id = @id AND dp.date BETWEEN MIN(@startPeriod, @endPeriod) AND MAX(@startPeriod, @endPeriod)
+    `)
+    try
+    {
+      const startAndEndPeriods = query.get({id: itemId, startPeriod, endPeriod});
+      return startAndEndPeriods;
+    }
+    catch(error)
+    {
+      ErrorHandler.logError(error);
+      throw error;
+    }
 
-  //   return dailyProductions
-  // }
-
-  // static getAllDailyProductionsForAccount(accountId)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT 
-  //                               t.id AS id,
-  //                               t.amount AS amount,
-  //                               t.debtor_id AS debtor_id,
-  //                               debtor.name AS debtor_name,
-  //                               t.creditor_id AS creditor_id,
-  //                               creditor.name AS creditor_name,
-  //                               t.comment AS comment,
-  //                               t.date AS date
-  //                             FROM dailyProductions t
-  //                             JOIN 
-  //                               accounts debtor  ON t.debtor_id = debtor.id
-  //                             JOIN
-  //                               accounts creditor ON t.creditor_id = creditor.id
-  //                             WHERE 
-  //                                 debtor.id = @accountId OR creditor.id = @accountId
-  //                             ORDER BY 
-  //                               t.date ASC, t.id ASC;`
-  //                             )
-  //   const dailyProductions = query.all({accountId})
-  //   const dailyProductionsEntities = DailyProductionEntity.createMultibleDailyProductionsEntities(dailyProductions)
-  //   return dailyProductionsEntities
-  // }
-
-  // static getAccountBalanceAtStartPeriod(accountId, startPeriod)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT 
-  //                               COALESCE(
-  //                                 SUM(
-  //                                   CASE
-  //                                     WHEN t.debtor_id = @accountId THEN t.amount
-  //                                     WHEN t.creditor_id = @accountId THEN -t.amount
-  //                                     ELSE 0
-  //                                   END
-  //                                 ), 0
-  //                               ) AS balance
-  //                             FROM dailyProductions t
-  //                             WHERE 
-  //                               t.date < @startPeriod
-  //                               AND (@accountId = t.debtor_id OR @accountId = t.creditor_id);
-  //                             `
-  //                             )
-  //   const balance = query.get({accountId, startPeriod})
-  //   return balance
-  // }
-
-  // static getFirstDailyProductionDateOfAccount(accountId)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT MIN(date) AS date
-  //                             FROM dailyProductions
-  //                             WHERE debtor_id = @accountId OR creditor_id = @accountId;
-  //                             `
-  //                             )
-  //   const date = query.get({accountId})
-  //   if(!date.date) return false;
-  //   return date
-  // }
-
-  // static getLastDailyProductionDateOfAccount(accountId)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const query = db.prepare(`SELECT MAX(date) AS date
-  //                             FROM dailyProductions
-  //                             WHERE debtor_id = @accountId OR creditor_id = @accountId;
-  //                             `
-  //                             )
-  //   const date = query.get({accountId})
-  //   if(!date.date) return false; 
-  //   return date
-  // }
-
-  // static getAccountDailyProductionsCount(accountId)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp()
-  //   const db = BaseDB.getDB()
-  //   const accountDailyProductionsNumberQuery = db.prepare(`
-  //     SELECT COUNT(DISTINCT dailyProduction_id) AS count
-  //     FROM dailyProductions
-  //     WHERE account_id = @id;
-  //     `)
-  //   const accountDailyProductionsNumberResponse = accountDailyProductionsNumberQuery.all({id: accountId});
-  //   return accountDailyProductionsNumberResponse;
-  // }
+  }
 
   static delete(id)
   {
@@ -647,50 +473,5 @@ export class DailyProduction
       throw error;
     }
   }
-
-  // static update(dailyProductionId, dailyProductionBody)
-  // {
-  //   if(!DailyProduction.isSetUped) DailyProduction.setUp();
-  //   if(!DailyProductionBody.isDailyProductionBody(dailyProductionBody)) throw new Error('DailyProduction.update method: expect DailyProductionBody object');
-  //   const date = dailyProductionBody.getMetaData().getDate()
-  //   const comment = dailyProductionBody.getMetaData().getComment()
-  //   const db = BaseDB.getDB()
-
-  //   const updateDailyProduction = db.dailyProduction((dailyProductionId, participants)=>
-  //   {
-  //     const updateDailyProductionHead = db.prepare('UPDATE dailyProductions_heads SET comment=@comment, date=@date WHERE id=@id');
-  //     const deleteDailyProductionDetails =  db.prepare('DELETE FROM dailyProductions WHERE dailyProduction_id = @id');
-  //     const createDailyProductionDetails =  db.prepare('INSERT INTO dailyProductions (dailyProduction_id, account_id, amount, role) VALUES (?, ?, ?, ?)');
-
-  //     let updateResponse = updateDailyProductionHead.run({id: dailyProductionId, date, comment});
-  //     let deleteResponse = deleteDailyProductionDetails.run({id: dailyProductionId});
-  //     let insertCount = 0;
-  //     for(const participant of participants)
-  //     {
-  //       let insertResponse = createDailyProductionDetails.run(dailyProductionId, participant.id, participant.body.amount, participant.body.role)
-  //       insertCount += insertResponse.changes;
-  //     }
-  //     return {
-  //       dailyProductionsHeads: updateResponse.changes,
-  //       dailyProductionsDetails: {
-  //         delete: deleteResponse.changes,
-  //         create: insertCount,
-  //       }
-  //     }
-  //   })
-
-  //   try
-  //   {
-  //     let participants = dailyProductionBody.participants;
-  //     if(!Array.isArray(participants)) throw new Error('DailyProduction modle -> update method: expect dailyProductionBody.participants to be an array')
-  //     let response = updateDailyProduction(dailyProductionId, [...participants])
-  //     return response
-  //   }
-  //   catch(error)
-  //   {
-  //     ErrorHandler.logError(error)
-  //     throw error
-  //   }
-  // }
 
 }

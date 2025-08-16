@@ -328,60 +328,6 @@ export class DailyProduction
     }
   }
 
-  // static getDailyProductionsItsNameContain(partialName)
-  // {
-  //   const dailyProductionData = {
-  //     name: partialName
-  //   }
-
-  //   const schema = Joi.object({
-  //     name: DailyProductionBody.nameSearchSchema,
-  //   })
-
-  //   const validationResonse = schema.validate(dailyProductionData)
-  //   if(validationResonse.error)
-  //   {
-  //     return new Response(false, validationResonse.error.message)
-  //   }
-
-  //   try
-  //   {
-  //     const items = DailyProductionModel.getDailyProductionsItsNameContain(partialName)
-  //     return new Response(true, null, items)
-  //   }
-  //   catch(error)
-  //   {
-  //     return new Response(false, error.message)
-  //   }
-  // }
-
-  // static getDailyProductionsItsIdContain(partialId)
-  // {
-  //   const dailyProductionData = {
-  //     id: partialId
-  //   }
-
-  //   const schema = Joi.object({
-  //     id: DailyProductionBody.idSchema,
-  //   })
-
-  //   const validationResonse = schema.validate(dailyProductionData)
-  //   if(validationResonse.error)
-  //   {
-  //     return new Response(false, validationResonse.error.message)
-  //   }
-
-  //   try
-  //   {
-  //     const items = DailyProductionModel.getDailyProductionsItsIdContain(partialId)
-  //     return new Response(true, null, items)
-  //   }
-  //   catch(error)
-  //   {
-  //     return new Response(false, error.message)
-  //   }
-  // }
-
   static delete(id)
   {
     const dailyProductionData = {
@@ -408,42 +354,63 @@ export class DailyProduction
     }
   }
 
-  // static update(internalId, body)
-  // {
-  //   const dailyProductionData = {
-  //     id: internalId,
-  //     body: 
-  //     {
-  //       id: body.id.toString().trim(),
-  //       name: body.name.trim()
-  //     }
-  //   }
-  //   const schema = Joi.object({
-  //     id: DailyProductionEntity.idSchema.required(),
-  //     body: Joi.object(
-  //       {
-  //         id: DailyProductionBody.idSchema.required(),
-  //       name: DailyProductionBody.nameSchema.required(),
-  //       }
-  //     )
-  //   })
+  static getItemStartAndEndProductionsDate = (itemId)=>
+  {
+    const schema = ItemBody.idSchema;
+    const validate = schema.validate(itemId);
+    if(validate.error)
+    {
+      return new Response(false, validate.error.message);
+    }
+    try
+    {
+      const response = DailyProductionModel.getItemStartAndEndProductionsDate(itemId);
+      return new Response(true, null, response);
+    }
+    catch(error)
+    {
+      return new Response(false, error.message);
+    }
+  }
 
-  //   const validationResponse = schema.validate(dailyProductionData)
-  //   if(validationResponse.error)
-  //   {
-  //     return new Response(false, validationResponse.error.message)
-  //   }
+  static getItemProductionQuantitiesTotalForAPeriod = (itemId, startPeriod, endPeriod) =>
+  {
+    const data = {
+      id: itemId, 
+      startPeriod, 
+      endPeriod
+    }
 
-  //   const itemBody = new DailyProductionBody(dailyProductionData.body.id, dailyProductionData.body.name);
-  //   const item = new DailyProductionEntity(dailyProductionData.id, itemBody);
-  //   try
-  //   {
-  //     const response = DailyProductionModel.update(item)
-  //     return new Response(true, null, response)
-  //   }
-  //   catch(error)
-  //   {
-  //     return new Response(false, error.message)
-  //   }
-  // }
+    const schema = Joi.object({
+      id: ItemBody.idSchema,
+      startPeriod: DailyProductionBody.dateSchema,
+      endPeriod: DailyProductionBody.dateSchema
+    })
+    
+    const validate = schema.validate(data);
+    if(validate.error)
+    {
+      return new Response(false, validate.error.message);
+    }
+
+    // check period logic
+    if(startPeriod > endPeriod)
+    {
+      return new Response(false, 'بداية فترة الإنتاج يجب أن تسبق نهاية فترة الإنتاج');
+    }
+
+    try
+    {
+      // check item existance
+      const item = Item.getItemByIdExactly(itemId);
+      if(item === false) return new Response(false, `لا يوجد عنصر مسجل بكود ${itemId}`)
+
+      const response = DailyProductionModel.getItemProductionQuantitiesTotalForAPeriod(itemId, startPeriod, endPeriod);
+      return new Response(true, null, response);
+    }
+    catch(error)
+    {
+      return new Response(false, error.message);
+    }
+  }
 }

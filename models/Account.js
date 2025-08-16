@@ -48,7 +48,7 @@ class Account
   {
     if(!Account.isSetUped) Account.setUp()
     const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM accounts')
+    const query = db.prepare('SELECT * FROM accounts ORDER BY id ASC;')
     const accounts = query.all()
     const accountsEntities = AccountEntity.createMultibleAccountsEntities(accounts)
     return accountsEntities

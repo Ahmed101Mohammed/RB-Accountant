@@ -1,6 +1,6 @@
 {
   "name": "rb-accountant",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "description": "The accountant app for my dad for his work.",
   "keywords": [
     "Desktop_App",
@@ -56,6 +56,7 @@
       },
       "win": {
         "target": "nsis",
+        "sign": false,
         "icon": "build/icons/icon.ico"
       },
       "linux": {

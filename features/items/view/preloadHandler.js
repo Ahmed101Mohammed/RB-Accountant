@@ -13,9 +13,9 @@ ipcMain.handle('getItemById', (event, id) =>
 })
 
 ipcMain.handle('getItemsItsIdContain', (event, partialId) =>
-  {
-  let response = Item.getItemsItsIdContain(partialId)
-  return response.toJson()
+{
+  let response = Item.getItemsItsIdContain(partialId);
+  return response.toJson();
 })
 
 ipcMain.handle('getItemsItsNameContain', (event, partialName)=>

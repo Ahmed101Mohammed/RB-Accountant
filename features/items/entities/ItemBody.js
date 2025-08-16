@@ -7,7 +7,7 @@ export class ItemBody
 
   static idSchema = Joi
     .string()
-    .pattern(/^[A-Za-z0-9]+$/, 'كود الصنف يحتوي على أرقام وأحرف إنجليزية فقط')
+    .pattern(/^[A-Za-z0-9\-]+$/, 'كود الصنف يحتوي على أرقام وأحرف إنجليزية وعلامة "-" فقط')
     .min(1)
     .max(20)
     .messages({
