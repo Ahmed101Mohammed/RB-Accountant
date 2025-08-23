@@ -41,3 +41,9 @@ ipcMain.handle('deleteDailyProductionById', (event, dailyProductionId)=>
   let response = DailyProduction.delete(dailyProductionId);
   return response.toJson();
 })
+
+ipcMain.handle('getAllDailyProductionsForItemForPeriod', (event, itemId, startPeriod, endPeriod)=>
+{
+  let response = DailyProduction.getAllDailyProductionsForItemForPeriod(itemId, startPeriod, endPeriod);
+  return response.toJson();
+})
