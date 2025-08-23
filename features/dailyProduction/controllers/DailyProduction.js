@@ -413,4 +413,45 @@ export class DailyProduction
       return new Response(false, error.message);
     }
   }
+
+  static getAllDailyProductionsForItemForPeriod(itemId, startPeriod, endPeriod)
+  {
+    const data = {
+      id: itemId, 
+      startPeriod, 
+      endPeriod
+    }
+
+    const schema = Joi.object({
+      id: ItemBody.idSchema,
+      startPeriod: DailyProductionBody.dateSchema,
+      endPeriod: DailyProductionBody.dateSchema
+    })
+    
+    const validate = schema.validate(data);
+    if(validate.error)
+    {
+      return new Response(false, validate.error.message);
+    }
+
+    // check period logic
+    if(startPeriod > endPeriod)
+    {
+      return new Response(false, 'بداية فترة الإنتاج يجب أن تسبق نهاية فترة الإنتاج');
+    }
+
+    try
+    {
+      // check item existance
+      const item = Item.getItemByIdExactly(itemId);
+      if(item === false) return new Response(false, `لا يوجد عنصر مسجل بكود ${itemId}`)
+
+      const response = DailyProductionModel.getAllDailyProductionsForItemForPeriod(itemId, startPeriod, endPeriod);
+      return new Response(true, null, response);
+    }
+    catch(error)
+    {
+      return new Response(false, error.message);
+    }
+  }
 }

@@ -328,6 +328,92 @@ export class DailyProduction
    
   }
 
+  static getAllDailyProductionsForItemForPeriod(itemId, startPeriod, endPeriod)
+  {
+    if(!DailyProduction.isSetUped) DailyProduction.setUp()
+    const db = BaseDB.getDB()
+    const query = db.prepare(`SELECT 
+                                dp.id AS id,
+                                dp.date AS date,
+                                json_group_array(
+                                  json_object(
+                                    'shiftId', shifts.id,
+                                    'shiftName', shifts.name,
+                                    'shiftStartAt', shifts.start_at,
+                                    'shiftEndAt', shifts.end_at,
+                                    'items', (
+                                      SELECT json_group_array(
+                                        json_object(
+                                          'itemId', items.id,
+                                          'itemName', items.name,
+                                          'accounts', (
+                                            SELECT json_group_array(
+                                              json_object(
+                                                'accountId', accounts.id,
+                                                'accountName', accounts.name
+                                              )
+                                            )
+                                            FROM shifts_items_accounts pAcc
+                                            JOIN accounts ON accounts.id = pAcc.account_id
+                                            WHERE pAcc.shift_item_id = pItem.id
+                                          ),
+                                          'assignments', (
+                                            SELECT json_group_array(
+                                              json_object(
+                                                'machineId', machines.id,
+                                                'machineName', machines.name,
+                                                'employeeId', employees.id,
+                                                'employeeName', employees.name,
+                                                'detailStartAt', details.start_at,
+                                                'detailEndAt', details.end_at,
+                                                'highQualityQuantity', details.high_quality_quantity,
+                                                'lowQualityQuantity', details.low_quality_quantity
+                                              )
+                                            )
+                                            FROM shifts_items_assignments details
+                                            JOIN machines ON machines.internal_id = details.machine_id
+                                            JOIN employees ON employees.internal_id = details.employee_id
+                                            WHERE details.shift_item_id = pItem.id
+                                          )
+                                        )
+                                      )
+                                      FROM shifts_items pItem
+                                      JOIN items ON items.internal_id = pItem.item_id
+                                      WHERE pItem.shift_id = shifts.id
+                                    )
+                                  )
+                                ) AS shifts
+                              FROM daily_production dp
+                              JOIN shifts ON shifts.daily_production_id = dp.id
+                              WHERE dp.date BETWEEN MIN(@startPeriod, @endPeriod) AND MAX(@startPeriod, @endPeriod)
+                                AND EXISTS (
+                                              SELECT 1
+                                              FROM shifts_items si
+                                              JOIN items ON items.internal_id = si.item_id
+                                              WHERE si.shift_id = shifts.id
+                                                AND items.id = @id
+                                            )
+                              GROUP BY dp.id
+                              ORDER BY dp.date ASC;
+                              `)
+    try
+    {
+      const dailyProductions = query.all({id: itemId, startPeriod, endPeriod});
+      const parsedDailyProductions = dailyProductions.map(dailyProduction => {
+        dailyProduction.shifts = JSON.parse(dailyProduction.shifts);
+        return dailyProduction;
+      });
+      const dailyProductionEntities = DailyProductionEntity.createMultipleDailyProductions(parsedDailyProductions);
+      return dailyProductionEntities;
+    }
+    catch(error)
+    {
+      ErrorHandler.logError(error)
+      return false;
+    }
+   
+  }
+
   static getDailyProductionById(id)
   {
     if(!DailyProduction.isSetUped) DailyProduction.setUp()
