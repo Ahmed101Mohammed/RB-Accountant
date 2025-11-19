@@ -1,0 +1,3 @@
+- [ ] Employees need to split them, and delete the type attribute.
+- [ ] Exporting don't need production order we can make things dynamic.
+- 
