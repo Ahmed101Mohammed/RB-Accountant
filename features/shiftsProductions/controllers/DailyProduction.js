@@ -12,7 +12,7 @@ import { DetailBody } from "../entities/DetailBody.js";
 import { Item } from "../../items/models/Item.js";
 import { Machine } from "../../machines/models/Machine.js";
 import { Employee } from "../../../models/Employee.js";
-import { DailyProduction as DailyProductionModel }  from "../models/DailyProduction.js"
+import { DailyProduction as DailyProductionModel }  from "../models/ShiftsProduction.js"
 import ErrorHandler from "../../../utils/ErrorHandler.js";
 import { currentDate } from "../../../utils/currentDate.js";
 import { DailyProduction as DailyProductionEntity } from "../entities/DailyProduction.js";

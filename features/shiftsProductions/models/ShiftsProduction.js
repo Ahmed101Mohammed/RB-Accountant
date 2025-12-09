@@ -3,8 +3,19 @@ import ErrorHandler from "../../../utils/ErrorHandler.js";
 import { DailyProductionBody } from "../entities/DailyProductionBody.js";
 import { DailyProduction as DailyProductionEntity } from "../entities/DailyProduction.js";
 
-export class DailyProduction
+export class ShiftsProduction
 {
+  static db = BaseDB.getDB();
+  static createTableCommand = db.prepare(`CREATE TABLE IF NOT EXISTS shifts_production(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  date TEXT NOT NULL,
+                  shift_id INTEGER NOT NULL,
+                  registration_time TEXT NOT NULL,
+                  last_update_time TEXT NOT NULL,
+
+                  FOREIGN KEY (shift_id) REFERENCES shifts(id)       
+                ) STRICT`
+              );
   static isSetUped = false
   static setUp()
   {
