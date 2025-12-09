@@ -11,8 +11,8 @@ export class RawMaterials
                   external_diameter INTEGER NOT NULL CHECK (external_diameter BETWEEN 1 AND 1000000000000000),
                   raw_material_shape_id_of_internal_diameter INTEGER UNIQUE NOT NULL,
                   internal_diameter INTEGER NOT NULL CHECK (internal_diameter BETWEEN 0 AND 1000000000000000),
-                  registration_date TEXT NOT NULL,
-                  last_update_date TEXT NOT NULL,
+                  registration_time TEXT NOT NULL,
+                  last_update_time TEXT NOT NULL,
                   
                   FOREIGN KEY (product_representative_entity_id) REFERENCES product_representative_entity(id),
                   FOREIGN KEY (raw_material_type_id) REFERENCES raw_material_types(id),

@@ -11,8 +11,8 @@ export class MachinesFaults
                   start_time TEXT NOT NULL,
                   end_time TEXT,
                   comment TEXT NOT NULL DEFAULT '' CHECK (length(comment) <= 500),
-                  registration_date TEXT NOT NULL,
-                  last_update_date TEXT NOT NULL,
+                  registration_time TEXT NOT NULL,
+                  last_update_time TEXT NOT NULL,
 
                   FOREIGN KEY (machine_id) REFERENCES machines(id),
                   FOREIGN KEY (technician_id) REFERENCES technicians(id)                  
