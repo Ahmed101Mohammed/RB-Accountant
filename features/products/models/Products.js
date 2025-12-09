@@ -15,8 +15,8 @@ export class Products
                   time_estimation INTEGER NOT NULL DEFAULT 1 CHECK (time_estimation BETWEEN 1 AND 1000000000000000),
                   length INTEGER NOT NULL DEFAULT 1 CHECK (length BETWEEN 1 AND 1000000000000000),
                   segment_length INTEGER NOT NULL DEFAULT 1 CHECK (segment_length BETWEEN 0 AND 1000000000000000),
-                  registration_date TEXT NOT NULL,
-                  last_update_date TEXT NOT NULL,
+                  registration_time TEXT NOT NULL,
+                  last_update_time TEXT NOT NULL,
                   
                   FOREIGN KEY (product_representative_entity_id) REFERENCES product_representative_entity(id),
                   FOREIGN KEY (raw_material_id) REFERENCES raw_materials(id)

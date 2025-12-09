@@ -10,8 +10,8 @@ export class ShiftsProduction
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
                   date TEXT NOT NULL,
                   shift_id INTEGER NOT NULL,
-                  registration_date TEXT NOT NULL,
-                  last_update_date TEXT NOT NULL,
+                  registration_time TEXT NOT NULL,
+                  last_update_time TEXT NOT NULL,
 
                   FOREIGN KEY (shift_id) REFERENCES shifts(id)       
                 ) STRICT`

@@ -8,8 +8,8 @@ export class Technicians
                   account_id INTEGER UNIQUE NOT NULL,
                   company_registration_number TEXT UNIQUE CHECK (length(company_registration_number) BETWEEN 1 AND 100),
                   phone_number TEXT UNIQUE CHECK (length(phone_number) BETWEEN 3 AND 13),
-                  registration_date TEXT NOT NULL,
-                  last_update_date TEXT NOT NULL,
+                  registration_time TEXT NOT NULL,
+                  last_update_time TEXT NOT NULL,
 
                   FOREIGN KEY (account_id) REFERENCES accounts(id)
                 ) STRICT`

@@ -10,8 +10,8 @@ export class RawMaterialTypes
                   density REAL NOT NULL CHECK (density BETWEEN 0.001 AND 30),
                   price INTEGER NOT NULL DEFAULT 0 CHECK (price BETWEEN 0 AND 1000000000000000),
                   recycling_price INTEGER NOT NULL DEFAULT 0 CHECK (price BETWEEN 0 AND 1000000000000000),
-                  registration_date TEXT NOT NULL,
-                  last_update_date TEXT NOT NULL
+                  registration_time TEXT NOT NULL,
+                  last_update_time TEXT NOT NULL
                 ) STRICT`
               );
   

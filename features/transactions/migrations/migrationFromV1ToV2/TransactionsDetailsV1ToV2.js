@@ -16,9 +16,9 @@ export class TransactionsDetailsV1ToV2
                 );
 
   static insertDataFromTransactionsHeadsTable = this.db.prepare(`INSERT INTO transactions (transaction_id, account_id, amount, role)
-                SELECT id, debtor_id, amount, 0 FROM old_transactions
+                SELECT id, debtor_id, amount, 0 FROM transactions_heads
                 UNION ALL
-                SELECT id, creditor_id, amount, 1 FROM old_transactions;`
+                SELECT id, creditor_id, amount, 1 FROM transactions_heads;`
               );
 
   static deleteTransactionsOfDeletedAccounts = this.db.prepare(`DELETE FROM transactions

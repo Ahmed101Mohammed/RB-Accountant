@@ -14,7 +14,7 @@ export class TransactionsDetails
                   transaction_id INTEGER NOT NULL,
                   account_id TEXT NOT NULL,
                   amount INTEGER NOT NULL CHECK (amount BETWEEN 1 AND 1000000000000000),
-                  role TEXT NOT NULL CHECK (role IN (creditor, debtor)),
+                  role TEXT NOT NULL CHECK (role IN ('creditor', 'debtor')),
                   comment TEXT NOT NULL DEFAULT '' CHECK (length(comment) < 500)
 
                   FOREIGN KEY (transaction_id) REFERENCES transaction(id) ON DELETE CASCADE,

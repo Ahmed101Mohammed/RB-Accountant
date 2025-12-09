@@ -1,5 +1,5 @@
-import { TransactionsV1ToV2 } from "../features/transactions/migrations/MigrationFromV1ToV2/TransactionsV1ToV2.js";
-import { TransactionsDetailsV1ToV2 } from "../features/transactions/migrations/MigrationFromV1ToV2/TransactionsDetailsV1ToV2.js";
+import { TransactionsV1ToV2 } from "../features/transactions/migrations/migrationFromV1ToV2/TransactionsV1ToV2.js";
+import { TransactionsDetailsV1ToV2 } from "../features/transactions/migrations/migrationFromV1ToV2/TransactionsDetailsV1ToV2.js";
 
 export class MigrationV1ToV2
 {

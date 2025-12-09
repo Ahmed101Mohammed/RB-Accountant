@@ -1,0 +1,3 @@
+- [ ] All registration and update date need to be time.
+- [ ] All data that valid until new update come not need to valid_to attribute.
+- [ ] Check that all migration of the data end to create table schema tepical to the main table setup creation.
