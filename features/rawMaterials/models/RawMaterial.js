@@ -1,9 +1,9 @@
 import BaseDB from "../../../models/BaseDB.js";
 
-export class RawMaterials
-{
+export class RawMaterials {
   static db = BaseDB.getDB();
-  static createTableCommand = db.prepare(`CREATE TABLE IF NOT EXISTS raw_materials(
+  static createTableCommand =
+    db.prepare(`CREATE TABLE IF NOT EXISTS raw_materials(
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
                   product_representative_entity_id INTEGER UNIQUE NOT NULL,
                   raw_material_type_id INTEGER UNIQUE NOT NULL,
@@ -20,7 +20,5 @@ export class RawMaterials
                   FOREIGN KEY (raw_material_shape_id_of_internal_diameter) REFERENCES raw_material_shapes(id),
                   CHECK (internal_diameter < external_diameter)
                   
-                ) STRICT`
-              );
-  
+                ) STRICT`);
 }
