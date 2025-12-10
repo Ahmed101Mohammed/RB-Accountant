@@ -11,10 +11,8 @@ export class ShiftsDetails
                   start_minute INTEGER DEFAULT 0 CHECK (start_minute BETWEEN 0 AND 59),
                   end_hour INTEGER CHECK (end_hour BETWEEN 0 AND 23),
                   end_minute INTEGER DEFAULT 0 CHECK (end_minute BETWEEN 0 AND 59),
-                  valid_from TEXT NOT NULL,
 
                   FOREIGN KEY (shift_id) REFERENCES shifts(id),
-                  CHECK (end_hour >= start_hour)
                 ) STRICT`
               );
   

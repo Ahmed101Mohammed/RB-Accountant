@@ -8,12 +8,17 @@ export class ShiftsProduction
   static db = BaseDB.getDB();
   static createTableCommand = db.prepare(`CREATE TABLE IF NOT EXISTS shifts_production(
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  date TEXT NOT NULL,
-                  shift_id INTEGER NOT NULL,
+                  start_date TEXT NOT NULL,
+                  end_date TEXT NOT NULL,
+                  name TEXT UNIQUE NOT NULL CHECK (length(name) BETWEEN 3 AND 100),
+                  start_hour INTEGER CHECK (start_hour BETWEEN 0 AND 23),
+                  start_minute INTEGER DEFAULT 0 CHECK (start_minute BETWEEN 0 AND 59),
+                  end_hour INTEGER CHECK (end_hour BETWEEN 0 AND 23),
+                  end_minute INTEGER DEFAULT 0 CHECK (end_minute BETWEEN 0 AND 59),
                   registration_time TEXT NOT NULL,
                   last_update_time TEXT NOT NULL,
-
-                  FOREIGN KEY (shift_id) REFERENCES shifts(id)       
+                  UNIQUE (start_date, start_hour, start_minute)
+                  UNIQUE (end_date, end_hour, end_minute)
                 ) STRICT`
               );
   static isSetUped = false

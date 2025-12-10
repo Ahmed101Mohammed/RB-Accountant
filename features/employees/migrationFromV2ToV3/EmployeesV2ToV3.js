@@ -7,6 +7,9 @@ export class EmployeesV2ToV3
   static insertEmployeesToFinancialRepresentativeEntity = db.prepare(`INSERT INTO financial_representative_entity (entity_id, name, registration_time, last_update_time)
                   SELECT id, name, '${currentTimeStamp()}', '${currentTimeStamp()}' FROM employees;`);
 
+  static renameOldShiftsTable = EmployeesV2ToV3.db.prepare(`ALTER TABLE shifts
+    RENAME TO old_shifts;`);
+    
   static createDefaultShift = this.db.prepare(`INSERT INTO shifts (shift_id, name, registration_time, last_update_time)
     VALUES ('0-0', 'default shift', '${currentTimeStamp()}', '${currentTimeStamp()}');`);
   
