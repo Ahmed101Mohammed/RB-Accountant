@@ -1,10 +1,9 @@
 import BaseDB from "../../../models/BaseDB.js";
 import { ItemBody } from "../entities/ItemBody.js";
-import { Item as ItemEntity } from "../entities/Item.js"
+import { Item as ItemEntity } from "../entities/Item.js";
 import ErrorHandler from "../../../utils/ErrorHandler.js";
 
-export class Products
-{	
+export class Products {
   static db = BaseDB.getDB();
   static createTableCommand = db.prepare(`CREATE TABLE IF NOT EXISTS products(
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,173 +20,157 @@ export class Products
                   FOREIGN KEY (product_representative_entity_id) REFERENCES product_representative_entity(id),
                   FOREIGN KEY (raw_material_id) REFERENCES raw_materials(id)
                   
-                ) STRICT`
-              );
-  static isSetUped = false
-  static setUp()
-  {
-    BaseDB.updateDB()
-    const db = BaseDB.getDB()
+                ) STRICT`);
+  static isSetUped = false;
+  static setUp() {
+    BaseDB.updateDB();
+    const db = BaseDB.getDB();
     const create = db.prepare(`CREATE TABLE IF NOT EXISTS items(
                   id TEXT UNIQUE NOT NULL,
                   internal_id INTEGER PRIMARY KEY AUTOINCREMENT,
                   name TEXT UNIQUE NOT NULL
-                ) STRICT`
-              )
-    create.run()
+                ) STRICT`);
+    create.run();
     Item.isSetUped = true;
   }
 
-  static create(item)
-  {
-    if(!Item.isSetUped) Item.setUp()
-    if(!ItemBody.isItemBody(item)) throw new Error('(model): Item.create method: expect ItemBody object');
+  static create(item) {
+    if (!Item.isSetUped) Item.setUp();
+    if (!ItemBody.isItemBody(item))
+      throw new Error("(model): Item.create method: expect ItemBody object");
     const itemId = item.id;
     const itemName = item.name;
     const db = BaseDB.getDB();
-    const insert = db.prepare('INSERT INTO items (id, name) VALUES (@id, @name)');
-    try
-    {
+    const insert = db.prepare(
+      "INSERT INTO items (id, name) VALUES (@id, @name)"
+    );
+    try {
       const response = insert.run({
         id: itemId,
-        name: itemName
-      })
+        name: itemName,
+      });
 
-      return response
-    }
-    catch(error)
-    {
-      ErrorHandler.logError(error)
-      throw error
+      return response;
+    } catch (error) {
+      ErrorHandler.logError(error);
+      throw error;
     }
   }
 
-  static getAllItems()
-  {
-    if(!Item.isSetUped) Item.setUp()
-    const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM items ORDER BY id ASC;')
+  static getAllItems() {
+    if (!Item.isSetUped) Item.setUp();
+    const db = BaseDB.getDB();
+    const query = db.prepare("SELECT * FROM items ORDER BY id ASC;");
     const items = query.all();
-    const itemsEntities = ItemEntity.createMultibleItemsEntities(items)
-    return itemsEntities
+    const itemsEntities = ItemEntity.createMultibleItemsEntities(items);
+    return itemsEntities;
   }
 
-  static getItemByName(name)
-  {
-    if(!Item.isSetUped) Item.setUp()
-    const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM items WHERE name = @name')
-    let item = query.get({name})
-    if(item) return new ItemEntity(item.id, item.name)
-    return false
+  static getItemByName(name) {
+    if (!Item.isSetUped) Item.setUp();
+    const db = BaseDB.getDB();
+    const query = db.prepare("SELECT * FROM items WHERE name = @name");
+    let item = query.get({ name });
+    if (item) return new ItemEntity(item.id, item.name);
+    return false;
   }
 
-  static getItemById(id)
-  {
-    if(!Item.isSetUped) Item.setUp()
-    const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM items WHERE internal_id = @id')
-    let item = query.get({id});
+  static getItemById(id) {
+    if (!Item.isSetUped) Item.setUp();
+    const db = BaseDB.getDB();
+    const query = db.prepare("SELECT * FROM items WHERE internal_id = @id");
+    let item = query.get({ id });
     let itemBody = new ItemBody(item.id, item.name);
     let itemEntity = new ItemEntity(item.internal_id, itemBody);
-    if(item) return itemEntity;
-    return false
+    if (item) return itemEntity;
+    return false;
   }
 
-  static getItemByIdExactly(id)
-  {
-    if(!Item.isSetUped) Item.setUp()
-    const db = BaseDB.getDB()
-    const query = db.prepare('SELECT * FROM items WHERE id = @id')
-    let item = query.get({id});
-  
-    if(item) 
-    {
+  static getItemByIdExactly(id) {
+    if (!Item.isSetUped) Item.setUp();
+    const db = BaseDB.getDB();
+    const query = db.prepare("SELECT * FROM items WHERE id = @id");
+    let item = query.get({ id });
+
+    if (item) {
       const itemBody = new ItemBody(item.id, item.name);
       const itemEntity = new ItemEntity(item.internal_id, itemBody);
       return itemEntity;
     }
-    return false
+    return false;
   }
 
   static getItemsItsNameContain(partialName) {
-    if(!Item.isSetUped) Item.setUp();
+    if (!Item.isSetUped) Item.setUp();
     const db = BaseDB.getDB();
-    
-    const query = db.prepare('SELECT * FROM items WHERE name LIKE @name');
+
+    const query = db.prepare("SELECT * FROM items WHERE name LIKE @name");
     const items = query.all({ name: `%${partialName}%` });
-    const itemsEntities = ItemEntity.createMultibleItemsEntities(items)
+    const itemsEntities = ItemEntity.createMultibleItemsEntities(items);
     return itemsEntities;
   }
 
   static getItemsItsIdContain(partialId) {
-    if(!Item.isSetUped) Item.setUp();
+    if (!Item.isSetUped) Item.setUp();
     const db = BaseDB.getDB();
-    
-    const query = db.prepare('SELECT * FROM items WHERE id LIKE @id');
+
+    const query = db.prepare("SELECT * FROM items WHERE id LIKE @id");
     const items = query.all({ id: `%${partialId}%` });
-    const itemsEntities = ItemEntity.createMultibleItemsEntities(items)
+    const itemsEntities = ItemEntity.createMultibleItemsEntities(items);
     return itemsEntities;
   }
 
-  static delete(internalId)
-  {
-    if(!Item.isSetUped) Item.setUp();
+  static delete(internalId) {
+    if (!Item.isSetUped) Item.setUp();
     const db = BaseDB.getDB();
-    
-    const deleteItem = db.prepare('DELETE FROM items WHERE internal_id = @internalId');
-    return deleteItem.run({internalId});
+
+    const deleteItem = db.prepare(
+      "DELETE FROM items WHERE internal_id = @internalId"
+    );
+    return deleteItem.run({ internalId });
   }
 
-  static update(item)
-  {
-    if(!Item.isSetUped) Item.setUp();
-    if(!ItemEntity.isItem(item)) throw new Error('(model) Item.update method: expect Item object');
+  static update(item) {
+    if (!Item.isSetUped) Item.setUp();
+    if (!ItemEntity.isItem(item))
+      throw new Error("(model) Item.update method: expect Item object");
     const itemInternalId = item.id;
     const itemId = item.bodyId;
     const itemName = item.bodyName;
     const db = BaseDB.getDB();
-    const query = db.prepare('UPDATE items SET name=@newName, id=@newId WHERE internal_id = @internalId');
-    try
-    {
+    const query = db.prepare(
+      "UPDATE items SET name=@newName, id=@newId WHERE internal_id = @internalId"
+    );
+    try {
       const response = query.run({
         internalId: itemInternalId,
         newId: itemId,
-        newName: itemName
+        newName: itemName,
       });
       return response;
-    }
-    catch(error)
-    {
-      ErrorHandler.logError(error)
-      return error
+    } catch (error) {
+      ErrorHandler.logError(error);
+      return error;
     }
   }
 
-  static getInternalIdsForIds(ids)
-  {
-    if(!Item.isSetUped) Item.setUp();
+  static getInternalIdsForIds(ids) {
+    if (!Item.isSetUped) Item.setUp();
     const db = BaseDB.getDB();
-    const getMany = db.transaction(ids => 
-    {
+    const getMany = db.transaction((ids) => {
       const internalIds = [];
-      const getId = db.prepare('SELECT internal_id FROM items WHERE id = @id');
-      for(let id of ids)
-      {
-        const row = getId.get({id});
-        internalIds.push(row? row.internal_id : null);
+      const getId = db.prepare("SELECT internal_id FROM items WHERE id = @id");
+      for (let id of ids) {
+        const row = getId.get({ id });
+        internalIds.push(row ? row.internal_id : null);
       }
       return internalIds;
-    }
-    )
+    });
 
-    try
-    {
+    try {
       const response = getMany(ids);
       return response;
-    }
-    catch(error)
-    {
+    } catch (error) {
       throw error;
     }
   }
