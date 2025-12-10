@@ -49,9 +49,12 @@ export class ProductsV2ToV3 {
         );`);
 
   static insertOldProductsToProducts = this.db
-    .prepare(`INSERT INTO products (product_representative_entity_id, raw_material_id, registration_time, last_update_time)
-    SELECT product_representative_entity_id,
-           (SELECT id FROM raw_materials ORDER BY id ASC LIMIT 1),
+    .prepare(`INSERT INTO products (id, product_representative_entity_id, raw_material_id, registration_time, last_update_time)
+    SELECT internal_id, product_representative_entity_id,
+           (SELECT raw_materials.id AS id 
+            FROM raw_materials
+            JOIN product_representative_entity ON product_representative_entity.id = raw_materials.product_representative_entity_id
+            WHERE product_representative_entity.entity_id = '0-0'),
                         '${currentTimeStamp()}',
                         '${currentTimeStamp()}'
     FROM items;`);
