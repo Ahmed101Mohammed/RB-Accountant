@@ -18,6 +18,11 @@ import { RawMaterialShapes } from "../features/rawMaterialShapes/models/RawMater
 import { RawMaterialTypes } from "../features/rawMaterialTypes/models/RawMaterialTypes.js";
 import { ProductsV2ToV3 } from "../features/products/migrations/migrationFromV2ToV3/ProductsV2ToV3.js";
 import { Products } from "../features/products/models/Products.js";
+import { ShiftsProduction } from "../features/shiftsProductions/models/ShiftsProduction.js";
+import { ShiftsProductionDetails } from "../features/shiftsProductions/models/ShiftsProductionDetails.js";
+import { ShiftsProductionV2ToV3 } from "../features/shiftsProductions/migrations/migrationFromV2ToV3/ShiftsProductionV2ToV3.js";
+import { ShiftsProductionDetailsV2ToV3 } from "../features/shiftsProductions/migrations/migrationFromV2ToV3/ShiftsProductionDetailsV2ToV3.js";
+
 export class MigrationV2ToV3 {
   static migrations = [
     // Transactions Migration
@@ -47,6 +52,8 @@ export class MigrationV2ToV3 {
     EmployeesV2ToV3.insertEmployeesToFinancialRepresentativeEntity,
 
     AccountsV2ToV3.insertFinancialRepresentativeEntitiesToAccounts,
+
+    EmployeesV2ToV3.renameOldShiftsTable, // Renaming old shifts table
 
     Shifts.createTableCommand,
     ShiftsDetails.createTableCommand,
@@ -100,5 +107,15 @@ export class MigrationV2ToV3 {
     ProductsV2ToV3.deleteItemsTable,
 
     // Shift Production
+    ShiftsProduction.createTableCommand,
+    ShiftsProductionDetails.createTableCommand,
+    ShiftsProductionV2ToV3.insertOldShiftsToShiftsProduction,
+    ShiftsProductionDetailsV2ToV3.insertOldShiftsProductionDetailsToShiftsProductionDetails,
+
+    ShiftsProductionDetailsV2ToV3.deleteShiftsItemsAssignments,
+    ShiftsProductionDetailsV2ToV3.deleteShiftsItemsAccounts,
+    ShiftsProductionDetailsV2ToV3.deleteShiftsItems,
+    ShiftsProductionV2ToV3.deleteOldShiftsTable, // Deleting old shifts table
+    ShiftsProductionV2ToV3.deleteDailyProductionTable
   ];
 }

@@ -1,3 +1,6 @@
 - [ ] All registration and update date need to be time.
+- [ ] All registration and update times need a validation pattern.
+- [ ] All dates need a validation pattern.
 - [ ] All data that valid until new update come not need to valid_to attribute.
 - [ ] Check that all migration of the data end to create table schema tepical to the main table setup creation.
+- [ ] All this in migration code for static methods or attribute must replaced with the class name.
