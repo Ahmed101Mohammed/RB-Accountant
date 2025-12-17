@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { isValid } from "../utils/isValid.js";
-import Account from "../Account.js";
+import {Account} from "../../features/accounts/entities/Account.js";
 import {ParticipantBody} from "./ParticipantBody.js";
 
 export class Participant

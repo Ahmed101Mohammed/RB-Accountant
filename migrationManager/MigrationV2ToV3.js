@@ -1,53 +1,43 @@
+import { SetupV3 } from "../setups/SetupV3.js"
 import { TransactionsV2ToV3 } from "../features/transactions/migrations/migrationFromV2ToV3/TransactionsV2ToV3.js";
 import { TransactionsDetailsV2ToV3 } from "../features/transactions/migrations/migrationFromV2ToV3/TransactionsDetailsV2ToV3.js";
-import { FinancialRepresentativeEntity } from "../models/FinancialRepresentativeEntity.js";
-import { AccountsGroups } from "../features/accountsGroups/models/AccountsGroups.js";
+import { FinancialRepresentativeEntityV3 } from "../models/financialRepresentativeEntity/setups/FinancialRepresentativeEntityV3.js";
+import { AccountsGroupsV3 } from "../features/accountsGroups/setups/AccountsGroupsV3.js";
 import { AccountsV2ToV3 } from "../features/accounts/migrations/migrationFromV2ToV3/AccountsV2ToV3.js";
-import { Accounts } from "../features/accounts/models/Accounts.js";
+import { AccountsV3 } from "../features/accounts/setups/AccountsV3.js";
 import { EmployeesV2ToV3 } from "../features/employees/migrationFromV2ToV3/EmployeesV2ToV3.js";
-import { Shifts } from "../features/shifts/models/Shifts.js";
-import { ShiftsDetails } from "../features/shifts/models/ShiftsDetails.js";
-import { Employees } from "../features/employees/models/Employees.js";
-import { PermanentEmployees } from "../features/employees/models/PermanentEmployees.js";
-import { MachineTypes } from "../features/machineTypes/models/MachineTypes.js";
+import { ShiftsV3 } from "../features/shifts/setups/shifts/ShiftsV3.js";
+import { ShiftsDetailsV3 } from "../features/shifts/setups/shiftsDetails/ShiftsDetailsV3.js";
+import { EmployeesV3 } from "../features/employees/setups/employees/EmployeesV3.js";
+import { PermanentEmployeesV3 } from "../features/employees/setups/permanentEmployees/PermanenetEmployeesV3.js";
+import { MachineTypesV3 } from "../features/machineTypes/setups/MachineTypesV3.js";
 import { MachinesV2ToV3 } from "../features/machines/migrations/migrationFromV2ToV3/MachinesV2ToV3.js";
-import { Machines } from "../features/machines/models/Machines.js";
-import { ProductRepresentativeEntity } from "../models/ProductRepresentativeEntity.js";
-import { RawMaterials } from "../features/rawMaterials/models/RawMaterial.js";
-import { RawMaterialShapes } from "../features/rawMaterialShapes/models/RawMaterialShapes.js";
-import { RawMaterialTypes } from "../features/rawMaterialTypes/models/RawMaterialTypes.js";
+import { MachinesV3 } from "../features/machines/setups/MachinesV3.js";
+import { ProductRepresentativeEntityV3 } from "../models/productRepresentativeEntity/setups/ProductRepresentativeEntityV3.js";
+import { RawMaterialsV3 } from "../features/rawMaterials/setups/RawMaterialsV3.js";
+import { RawMaterialShapesV3 } from "../features/rawMaterialShapes/setups/RawMaterialShapesV3.js";
+import { RawMaterialTypesV3 } from "../features/rawMaterialTypes/setups/RawMaterialTypesV3.js";
 import { ProductsV2ToV3 } from "../features/products/migrations/migrationFromV2ToV3/ProductsV2ToV3.js";
-import { Products } from "../features/products/models/Products.js";
-import { ShiftsProduction } from "../features/shiftsProductions/models/ShiftsProduction.js";
-import { ShiftsProductionDetails } from "../features/shiftsProductions/models/ShiftsProductionDetails.js";
-import { ShiftsProductionV2ToV3 } from "../features/shiftsProductions/migrations/migrationFromV2ToV3/ShiftsProductionV2ToV3.js";
-import { ShiftsProductionDetailsV2ToV3 } from "../features/shiftsProductions/migrations/migrationFromV2ToV3/ShiftsProductionDetailsV2ToV3.js";
+import { ProductsV3 } from "../features/products/setups/ProductsV3.js";
+import { ShiftsProductionV3 } from "../features/shiftsProduction/setups/shiftsProduction/ShiftsProductionV3.js";
+import { ShiftsProductionDetailsV3 } from "../features/shiftsProduction/setups/shiftsProductionDetails/ShiftsProductionDetailsV3.js";
+import { ShiftsProductionV2ToV3 } from "../features/shiftsProduction/migrations/migrationFromV2ToV3/ShiftsProductionV2ToV3.js";
+import { ShiftsProductionDetailsV2ToV3 } from "../features/shiftsProduction/migrations/migrationFromV2ToV3/ShiftsProductionDetailsV2ToV3.js";
+import { BaseDB } from "../models/BaseDB.js";
+import { TransactionsDetailsV3 } from "../features/transactions/setups/transactionsDetails/TransactionsDetailsV3.js";
+import { TransactionsV3 } from "../features/transactions/setups/transactions/TransactionsV3.js";
 
 export class MigrationV2ToV3 {
+  static updateDBVersion = 'user_version = 3';
   static migrations = [
-    // Transactions Migration
-    TransactionsDetailsV2ToV3.changeTableName,
-    TransactionsDetailsV2ToV3.addCommentColumn,
-    TransactionsDetailsV2ToV3.updateCommentColumn,
-    TransactionsDetailsV2ToV3.addNewRoleColumn,
-    TransactionsDetailsV2ToV3.updateNewRoleColumn,
-    TransactionsDetailsV2ToV3.deleteRoleColumn,
-    TransactionsDetailsV2ToV3.changeNewRoleColumnName,
-
-    TransactionsV2ToV3.changeTableName,
-    TransactionsV2ToV3.deleteCommentColumn,
-    TransactionsV2ToV3.addRegistrationTimeColumn,
-    TransactionsV2ToV3.addLastUpdateTimeColumn,
-
     // Accounts & Employees Migration
-    FinancialRepresentativeEntity.createTableCommand,
+    FinancialRepresentativeEntityV3.createTableCommand,
 
-    AccountsGroups.createTableCommand,
+    AccountsGroupsV3.createTableCommand,
 
     AccountsV2ToV3.renameOldTable,
     AccountsV2ToV3.insertOldAccountsToFinancialRepresentativeEntity,
-    AccountsV2ToV3.deleteOldTable,
-    Accounts.createTableCommand,
+    AccountsV3.createTableCommand,
 
     EmployeesV2ToV3.insertEmployeesToFinancialRepresentativeEntity,
 
@@ -55,8 +45,8 @@ export class MigrationV2ToV3 {
 
     EmployeesV2ToV3.renameOldShiftsTable, // Renaming old shifts table
 
-    Shifts.createTableCommand,
-    ShiftsDetails.createTableCommand,
+    ShiftsV3.createTableCommand,
+    ShiftsDetailsV3.createTableCommand,
 
     EmployeesV2ToV3.createDefaultShift,
     EmployeesV2ToV3.createDefaultShiftDetails,
@@ -71,30 +61,55 @@ export class MigrationV2ToV3 {
     EmployeesV2ToV3.updateRegistrationTimeAndLastUpdateTimeForEmployees,
 
     EmployeesV2ToV3.renameEmployeesTableToOldEmployees,
-    Employees.createTableCommand,
+    EmployeesV3.createTableCommand,
     EmployeesV2ToV3.insertOldEmployeesToEmployees,
 
-    PermanentEmployees.createTableCommand,
+    PermanentEmployeesV3.createTableCommand,
     EmployeesV2ToV3.insertAllEmployeesToPermenantEmployees,
 
+    // Transactions Migration
+    TransactionsDetailsV2ToV3.changeTableName,
+    
+    TransactionsDetailsV2ToV3.addCommentColumn,
+    TransactionsDetailsV2ToV3.updateCommentColumn,
+    TransactionsDetailsV2ToV3.addNewRoleColumn,
+    TransactionsDetailsV2ToV3.updateNewRoleColumn,
+    TransactionsDetailsV2ToV3.deleteRoleColumn,
+    TransactionsDetailsV2ToV3.changeNewRoleColumnName,
+    TransactionsDetailsV2ToV3.addAccountNewIdColumn,
+    TransactionsDetailsV2ToV3.updateAccountNewIdColumn,
+
+    TransactionsV2ToV3.deleteCommentColumn,
+    TransactionsV2ToV3.addRegistrationTimeColumn,
+    TransactionsV2ToV3.addLastUpdateTimeColumn,
+    TransactionsV2ToV3.updateTransactionsRegistrationTimeAndLastUpdateTime,
+
+    TransactionsV3.createTableCommand,
+    TransactionsDetailsV3.createTableCommand,
+
+    TransactionsV2ToV3.insertAllTransactionsHeadsToTransactions,
+    TransactionsDetailsV2ToV3.insertAllOldTransactionToTransactionsDetails,
+
+    TransactionsDetailsV2ToV3.deleteOldTransactionsTable,
+    TransactionsV2ToV3.deleteTransactionsHeadsTable,
+
     // Machines
-    MachineTypes.createTableCommand,
+    MachineTypesV3.createTableCommand,
     MachinesV2ToV3.insertDefaultMachineType,
     MachinesV2ToV3.addMachineTypeIdColumn,
     MachinesV2ToV3.updateMachineTypeIdForMachines,
     MachinesV2ToV3.renameMachinesTableToOldMachines,
-    Machines.createTableCommand,
+    MachinesV3.createTableCommand,
     MachinesV2ToV3.insertOldMachineToMachines,
-    MachinesV2ToV3.deleteOldMachines,
 
     // Products
-    ProductRepresentativeEntity.createTableCommand,
-    RawMaterials.createTableCommand,
-    RawMaterialShapes.createTableCommand,
-    RawMaterialTypes.createTableCommand,
-    Products.createTableCommand,
+    ProductRepresentativeEntityV3.createTableCommand,
+    RawMaterialsV3.createTableCommand,
+    RawMaterialShapesV3.createTableCommand,
+    RawMaterialTypesV3.createTableCommand,
+    ProductsV3.createTableCommand,
 
-    ProductsV2ToV3.insertOldProductsToProductRepresentativeEntity,
+    ProductsV2ToV3.updateItemsIds,
     ProductsV2ToV3.insertDefaultProductRepresentativeEntity,
     ProductsV2ToV3.insertDefaultRawMaterialType,
     ProductsV2ToV3.insertDefaultRawMaterialShape,
@@ -104,11 +119,10 @@ export class MigrationV2ToV3 {
     ProductsV2ToV3.addProductRepresentativeEntityIdColumnToItems,
     ProductsV2ToV3.updateProductRepresentativeEntityIdForItems,
     ProductsV2ToV3.insertOldProductsToProducts,
-    ProductsV2ToV3.deleteItemsTable,
 
     // Shift Production
-    ShiftsProduction.createTableCommand,
-    ShiftsProductionDetails.createTableCommand,
+    ShiftsProductionV3.createTableCommand,
+    ShiftsProductionDetailsV3.createTableCommand,
     ShiftsProductionV2ToV3.insertOldShiftsToShiftsProduction,
     ShiftsProductionDetailsV2ToV3.insertOldShiftsProductionDetailsToShiftsProductionDetails,
 
@@ -116,6 +130,34 @@ export class MigrationV2ToV3 {
     ShiftsProductionDetailsV2ToV3.deleteShiftsItemsAccounts,
     ShiftsProductionDetailsV2ToV3.deleteShiftsItems,
     ShiftsProductionV2ToV3.deleteOldShiftsTable, // Deleting old shifts table
-    ShiftsProductionV2ToV3.deleteDailyProductionTable
+    ShiftsProductionV2ToV3.deleteDailyProductionTable,
+
+    AccountsV2ToV3.deleteOldTable,
+    EmployeesV2ToV3.deleteOldEmployees,
+    MachinesV2ToV3.deleteOldMachines,
+    ProductsV2ToV3.deleteItemsTable,
+    // setup dbv3
+    ...SetupV3.setups
   ];
+
+  static checkEachEmployeeOrClientHaveUniqueId = {
+    run: function()
+      {
+        const db = BaseDB.getDB();
+        const query = db.prepare(`SELECT id
+            FROM employees
+            WHERE id IN ( SELECT id 
+              FROM accounts
+            )
+          `);
+        const ids = query.all();
+        if(ids.length > 0)
+        {
+          throw new Error(`هذه الأكواد ${ids.map(idObject => idObject.id).join(', ')} مشتركة بي عدد من الموظفين والحسابات، يجب أن تعود للإصدار القديم (v2)، وجعل كل حساب وموظف له كود مميز.`)
+        }
+        return true;
+      }
+  }
+
+  static checks = [MigrationV2ToV3.checkEachEmployeeOrClientHaveUniqueId]
 }

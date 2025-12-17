@@ -1,5 +1,10 @@
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('apis', {
+  // Setup
+  dbVersion: () => ipcRenderer.invoke('dbVersion'),
+  setup: () => ipcRenderer.invoke('setup'),
+  updateDB: () => ipcRenderer.invoke('updateDB'),
+  
   // Account
   getAllAccounts: () => ipcRenderer.invoke('getAllAccounts'),
   getAccountsItsIdContain: (partialId) => ipcRenderer.invoke('getAccountsItsIdContain', partialId),

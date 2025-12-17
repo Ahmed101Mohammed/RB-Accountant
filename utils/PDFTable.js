@@ -1,7 +1,7 @@
 import PDFDocument from 'pdfkit'
 import fs from 'fs'
 
-class PDFTable {
+export class PDFTable {
     constructor(doc, startX, startY, columnWidths) {
         this.doc = doc;
         this.startX = startX;
@@ -67,5 +67,3 @@ class PDFTable {
         return this.columnWidths.reduce((sum, width) => sum + width, 0);
     }
 }
-
-export default PDFTable

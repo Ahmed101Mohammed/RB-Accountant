@@ -1,50 +1,61 @@
-import BaseDB from "../../../../models/BaseDB.js";
-
 export class TransactionsDetailsV2ToV3
 {
-  static db = BaseDB.getDB();
-  static changeTableName = this.db.prepare(`ALTER TABLE transactions
-                            RENAME TO transactions_details;`
-                );
+  static changeTableName = `ALTER TABLE transactions
+                            RENAME TO old_transactions;`
 
-  static addCommentColumn = this.db.prepare(`ALTER TABLE transactions_details
+  static addCommentColumn = `ALTER TABLE old_transactions
     ADD COLUMN comment 
     TEXT 
     NOT NULL
     DEFAULT ''
-    CHECK (length(comment) <= 500);`);
+    CHECK (length(comment) <= 500);`;
 
-  static updateCommentColumn = this.db.prepare(`UPDATE transactions_details 
+  static updateCommentColumn = `UPDATE old_transactions 
     SET comment = (SELECT
                   CASE 
-                    WHEN (length(t.comment) > 500)
-                      THEN substr(t.comment, 1, 500)
-                    ELSE t.comment
+                    WHEN (length(transactions_heads.comment) > 500)
+                      THEN substr(transactions_heads.comment, 1, 500)
+                    ELSE transactions_heads.comment
                   END
-    FROM transactions
-    WHERE transactions_details.transaction_id = transactions.id);`
-              );
+    FROM transactions_heads
+    WHERE old_transactions.transaction_id = transactions_heads.id);`;
 
-  static addNewRoleColumn = this.db.prepare(`ALTER TABLE transactions_details
+  static addNewRoleColumn = `ALTER TABLE old_transactions
     ADD COLUMN new_role 
     TEXT 
     NOT NULL
     DEFAULT 'debtor'
-    CHECK (new_role IN ('creditor', 'debtor'));`);
+    CHECK (new_role IN ('creditor', 'debtor'));`;
 
-  static updateNewRoleColumn = this.db.prepare(`UPDATE transactions_details 
+  static updateNewRoleColumn = `UPDATE old_transactions 
     SET new_role =  CASE 
                     WHEN (role = 0)
                       THEN 'debtor'
                     WHEN (role = 1)
                       THEN 'creditor'
                     else 'debtor'
-                  END;`
-            );
+                  END;`;
 
-  static deleteRoleColumn = this.db.prepare(`ALTER TABLE transactions_details
-    DROP COLUMN role;`);
+  static deleteRoleColumn = `ALTER TABLE old_transactions
+    DROP COLUMN role;`;
 
-  static changeNewRoleColumnName = this.db.prepare(`ALTER TABLE transactions_details
-    RENAME COLUMN new_role TO role;`);
+  static changeNewRoleColumnName = `ALTER TABLE old_transactions
+    RENAME COLUMN new_role TO role;`;
+
+  static addAccountNewIdColumn = `ALTER TABLE old_transactions
+    ADD COLUMN account_new_id 
+    INTEGER;`;
+  
+  static updateAccountNewIdColumn = `UPDATE old_transactions 
+    SET account_new_id =  (SELECT accounts.id
+    FROM accounts
+    JOIN financial_representative_entity AS fre ON fre.id = accounts.financial_representative_entity_id
+    WHERE entity_id = old_transactions.account_id
+    );`;
+  
+  static insertAllOldTransactionToTransactionsDetails = `INSERT INTO transactions_details (transaction_id, account_id, amount, role, comment)
+    SELECT transaction_id, account_new_id, amount, role, comment
+    FROM old_transactions;`;
+
+  static deleteOldTransactionsTable = `DROP TABLE old_transactions;`;
 }
