@@ -3,7 +3,7 @@ import PDFDocument from 'pdfkit'
 import fs from 'fs'
 import path from 'node:path'
 import { fileURLToPath } from 'url';
-import PDFTable from '../utils/PDFTable.js';
+import {PDFTable} from '../utils/PDFTable.js';
 
 async function generatePDF(data) {
     // Open a "Save As" dialog

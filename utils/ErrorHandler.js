@@ -1,4 +1,4 @@
-class ErrorHandler
+export class ErrorHandler
 {
   static logError(error)
   {
@@ -7,5 +7,3 @@ class ErrorHandler
     console.log(`Error=> ${name}: ${message}`)
   }
 }
-
-export default ErrorHandler

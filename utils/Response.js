@@ -1,4 +1,4 @@
-class Response
+export class Response
 {
   #state;
   #message;
@@ -62,5 +62,3 @@ class Response
 		
   }
 }
-
-export default Response

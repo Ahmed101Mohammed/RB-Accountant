@@ -5,7 +5,7 @@ import { TransactionMetaData } from "./TransactionMetaData.js";
 import { ParticipantsList } from "./ParticipantsList.js";
 import { Participant } from "./Participant.js";
 import { ParticipantBody } from "./ParticipantBody.js";
-import Account from "../Account.js";
+import {Account} from "../../features/accounts/entities/Account.js";
 
 export class Transaction
 {

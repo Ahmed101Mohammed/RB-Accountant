@@ -1,6 +1,6 @@
 import { MigrationV1ToV2 } from "./MigrationV1ToV2.js";
 import { MigrationV2ToV3 } from "./MigrationV2ToV3.js";
-import BaseDB from "../models/BaseDB.js";
+import {BaseDB} from "../models/BaseDB.js";
 
 export class MigrationManager
 {
@@ -15,10 +15,24 @@ export class MigrationManager
         for (let stepIndex = dbVersion-1; stepIndex < MigrationManager.migrations.length; stepIndex++)
         {
           let migrationStep = MigrationManager.migrations[stepIndex];
-          for(let subStep of migrationStep.migrations)
+          // console.log(migrationStep.name)
+
+          // Migration gurd
+          for (let subStep of migrationStep.checks)
           {
+            // console.log(subStep)
             subStep.run();
           }
+
+          // Migration
+          for(let subStep of migrationStep.migrations)
+          {
+            // console.log(`SubStep: ${subStep}`)
+            MigrationManager.db.prepare(subStep).run();
+          }
+
+          // update version
+          MigrationManager.db.pragma(migrationStep.updateDBVersion)
         }
       })
     try

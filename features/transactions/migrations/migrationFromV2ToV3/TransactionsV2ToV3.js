@@ -1,25 +1,27 @@
-import BaseDB from "../../../../models/BaseDB.js";
+import { currentTimeStamp } from "../../../../utils/currentTimeStamp.js";
 
 export class TransactionsV2ToV3
 {
-  static db = BaseDB.getDB();
-  static changeTableName = this.db.prepare(`ALTER TABLE transactions_heads
-                            RENAME TO transactions;`);
+  static deleteCommentColumn = `ALTER TABLE transactions_heads
+    DROP COLUMN comment;`;
 
-  static deleteCommentColumn = this.db.prepare(`ALTER TABLE transactions
-    DROP COLUMN comment;`);
-
-  static addRegistrationTimeColumn = this.db.prepare(`ALTER TABLE transactions
+  static addRegistrationTimeColumn = `ALTER TABLE transactions_heads
     ADD COLUMN registration_time 
-    TEXT 
-    NOT NULL 
-    DEFAULT CURRENT_TIMESTAMP
-    CHECK (registration_time GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]');`);
+    TEXT
+    CHECK (registration_time GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]');`;
 
-  static addLastUpdateTimeColumn = this.db.prepare(`ALTER TABLE transactions
+  static addLastUpdateTimeColumn = `ALTER TABLE transactions_heads
     ADD COLUMN last_update_time 
     TEXT 
-    NOT NULL 
-    DEFAULT CURRENT_TIMESTAMP 
-    CHECK (last_update_time GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]');`);
+    CHECK (last_update_time GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]');`;
+
+  static updateTransactionsRegistrationTimeAndLastUpdateTime = `UPDATE transactions_heads 
+    SET registration_time = '${currentTimeStamp()}', 
+      last_update_time = '${currentTimeStamp()}';`;
+  
+  static insertAllTransactionsHeadsToTransactions = `INSERT INTO transactions (id, date, registration_time, last_update_time)
+    SELECT id, date, registration_time, last_update_time
+    FROM transactions_heads;`
+
+  static deleteTransactionsHeadsTable = `DROP TABLE transactions_heads;`
 }
