@@ -3,9 +3,6 @@ import {app} from 'electron'
 import fs from 'fs';
 import path from 'path';
 
-import Transaction from "./Transaction.js";
-import {ErrorHandler} from "../utils/ErrorHandler.js";
-
 export class BaseDB
 {
   static database;
@@ -47,49 +44,9 @@ export class BaseDB
     return BaseDB.database 
   }
 
-  static updateDB()
-  {
-		console.log({ db: BaseDB.dbFolderPath });
-		// Start from here and sure that database evaluated before tryint to read it's pragma
-    if(!fs.existsSync(BaseDB.dbPath))
-    {
-      if(!BaseDB.database) BaseDB.open();
-      BaseDB.database.pragma('user_version = 2');
-      db.exec('PRAGMA foreign_keys = ON');
-      console.log(`DB updated to version: ${BaseDB.dbVersion()}`);
-      return;
-    }
-    let dbVersion = BaseDB.dbVersion();
-    console.log({dbVersion});
-    if (dbVersion === 2) return;
-
-    try
-    {
-      Transaction.migrateToDBVersion2()
-      BaseDB.database.pragma('user_version = 2');
-      db.exec('PRAGMA foreign_keys = ON');
-      console.log(`DB updated to version: ${BaseDB.dbVersion()}`);
-      return;
-    } 
-    catch(error)
-    {
-      ErrorHandler.logError(error)
-    }
-  }
-
   static dbVersion()
   {
     const version = BaseDB.getDB().pragma('user_version', {simple: true});
     return version === 0 ? 1 : version;
-  }
-
-  static tableExists(tableName) {
-    const row = BaseDB.getDB().prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(tableName);
-    return !!row;
-  } 
-	
-  static isTableEmpty(tableName) {
-    const row = BaseDB.getDB().prepare(`SELECT COUNT(*) as count FROM ${tableName}`).get();
-    return row.count === 0;
   }
 }

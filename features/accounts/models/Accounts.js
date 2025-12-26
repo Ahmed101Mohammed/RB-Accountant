@@ -5,6 +5,21 @@ import { BaseDB } from "../../../models/BaseDB.js";
 
 export class Accounts
 {
+  static db = BaseDB.getDB();
+
+  static isAccountsGroupIdHasAccountChild(accountsGroupId)
+  {
+    const command = Accounts
+      .db.prepare(`SELECT 1
+        FROM accounts
+        WHERE accounts.account_group_id = @accountsGroupId;`);
+    const result = command.all({accountsGroupId});
+    if(result.length > 0)
+    {
+      return true;
+    }
+    return false;
+  }
   // static isSetUped = false
   // static setUp()
   // {
