@@ -1,28 +1,7 @@
-# App features from user prespective
-- [X] Create new account.
-- [X] Get data of an account by code or name.
-- [X] Edit account data
-- [ ] Delete an account with delete button (verify button to delete all the transactions related to the account (metion the number of transactions)).
-- [X] Create new transaction.
-- [X] Get all transactions.
-- [X] Edit transaction.
-- [X] Delete transaction.
-- [ ] Can get account statement: by adding the account code he get all transactions from first transaction to the last one, then he can specify the data.
-- [X] Create worker.
-- [X] GEt workers.
-- [ ] Get Worker by code or name.
-- [ ] Delete woker with any related data (now their no related data).
-- [X] Edit worker data.
-- [ ] Create machien.
-- [ ] Get machien with name or code.
-- [ ] Get all machiens.
-- [ ] Delete machien with any related data.
-- [ ] Update machien.
-- [ ] Create product.
-- [ ] Get Products.
-- [ ] Get Product with code or name.
-- [ ] Delete Product with any related data.
-- [ ] Update Product.
+# Tasks
+- [X] Add the pagination for getAccountsGroups
+- [X] Seperate the model and controller of AccountsGroups feature 
+- [ ] Add getAccountsGroup api.
 
 # Bonus features
 - Ability to print the results of "Get transactions for specific account in date range." feature.

@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'url';
 import generatePDF from './services/exportPdf.js';
 import generateExcel from './services/exportExcel.js';
-import { Setup } from './features/setup/controllers/Setup.js';
+import { Setup} from './features/setup/controllers/Setup.js';
 
 // test
 console.log(Setup.dbVersion().getData())
@@ -36,7 +36,10 @@ app.on('window-all-closed', ()=>
 
 app.whenReady().then(async () => {
   // Setup
-  await import('./features/setup/view/preloadHandler.js')
+  await import('./features/setup/view/preloadHandler.js');
+
+  // AccountsGroups
+  await import('./features/accountsGroups/view/AccountsGroups.js');
 
   // Accounts
   await import('./features/accounts/view/preloadHandler.js');
@@ -55,7 +58,7 @@ app.whenReady().then(async () => {
   await import('./features/shiftsProduction/view/preloadHandler.js');
   
   // Transactions
-  await import('./features/transactions/view/preloadHandler.js')
+  await import('./features/transactions/view/preloadHandler.js');
 
   // services
   ipcMain.handle('exportPDF', (event, data)=>

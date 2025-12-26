@@ -5,6 +5,12 @@ contextBridge.exposeInMainWorld('apis', {
   setup: () => ipcRenderer.invoke('setup'),
   updateDB: () => ipcRenderer.invoke('updateDB'),
   
+  // AccountsGroups
+  createAccountsGroup: (entityId, name, accountsGroupId)=> ipcRenderer.invoke('createAccountsGroup', entityId, name, accountsGroupId),
+  getAccountsGroups: (page, pageSize)=> ipcRenderer.invoke('getAccountsGroups', page, pageSize),
+  getAccountsGroupsByEntityIdContains: (partialEntityId, page, pageSize)=> ipcRenderer.invoke('getAccountsGroupsByEntityIdContains', partialEntityId, page, pageSize),
+  getAccountsGroupsByNameContains: (partialName, page, pageSize)=> ipcRenderer.invoke('getAccountsGroupsByNameContains', partialName, page, pageSize),
+  
   // Account
   getAllAccounts: () => ipcRenderer.invoke('getAllAccounts'),
   getAccountsItsIdContain: (partialId) => ipcRenderer.invoke('getAccountsItsIdContain', partialId),

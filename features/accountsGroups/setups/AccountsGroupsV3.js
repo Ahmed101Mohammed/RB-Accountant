@@ -3,7 +3,7 @@ export class AccountsGroupsV3
   static createTableCommand = `CREATE TABLE IF NOT EXISTS accounts_groups(
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
                   financial_representative_entity_id INTEGER UNIQUE NOT NULL,
-                  account_group_id INTEGER UNIQUE,
+                  account_group_id INTEGER,
                   registration_time TEXT NOT NULL,
                   last_update_time TEXT NOT NULL,
 
